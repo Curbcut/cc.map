@@ -18674,22 +18674,19 @@ function Map(_ref) {
       container: mapContainer.current,
       style: 'mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp',
       center: [configuration.longitude, configuration.latitude],
-      zoom: configuration.zoom,
-      transformRequest: function transformRequest(url, resourceType) {
-        if (resourceType === 'Source' && url.indexOf('http://') > -1) {
-          return {
-            url: url.replace('http', 'https'),
-            headers: {
-              'my-custom-header': true
-            },
-            credentials: 'include' // Include cookies for cross-origin requests
-          };
-        }
-      }
+      zoom: configuration.zoom
     });
 
-    var nav = new mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.NavigationControl();
-    map.current.addControl(nav, 'bottom-right');
+    // Once on the app, the map does not take the whole space of the div
+    // This is a workaround to resize the map and make it fit the div
+    var resizeObserver = new ResizeObserver(function () {
+      map.current.resize();
+    });
+    resizeObserver.observe(mapContainer.current);
+    return function () {
+      map.current.remove();
+      resizeObserver.disconnect();
+    };
   }, []);
 
   // Update the map center and zoom when the configuration changes

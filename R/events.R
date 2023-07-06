@@ -14,8 +14,10 @@
 #' specified event type, NULL otherwise.
 #' @examples
 #' \dontrun{
-#' get_map_event(map_id = "map", event_type = "viewstate",
-#'               values = c("lon", "lat", "zoom"))
+#' get_map_event(
+#'   map_id = "map", event_type = "viewstate",
+#'   values = c("lon", "lat", "zoom")
+#' )
 #' }
 #' @export
 get_map_event <- function(map_id, event_type, values, session = shiny::getDefaultReactiveDomain()) {
@@ -43,8 +45,16 @@ get_map_event <- function(map_id, event_type, values, session = shiny::getDefaul
 #' @seealso \code{\link{get_map_event}}
 #' @export
 get_map_viewstate <- function(map_id, session = shiny::getDefaultReactiveDomain()) {
-  get_map_event(map_id = map_id, event_type = "viewstate",
-                values = c("longitude", "latitude", "zoom"), session = session)
+  out <- get_map_event(
+    map_id = map_id, event_type = "viewstate",
+    values = c("longitude", "latitude", "zoom"), session = session
+  )
+
+  if (length(out) == 0) {
+    return(NULL)
+  }
+
+  lapply(out, as.numeric)
 }
 
 #' Retrieve Click Information from a Map
@@ -64,6 +74,17 @@ get_map_viewstate <- function(map_id, session = shiny::getDefaultReactiveDomain(
 #' @seealso \code{\link{get_map_event}}
 #' @export
 get_map_click <- function(map_id, session = shiny::getDefaultReactiveDomain()) {
-  get_map_event(map_id = map_id, event_type = "click",
-                values = c("ID", "layerName"), session = session)
+  out <- get_map_event(
+    map_id = map_id, event_type = "click",
+    values = c("ID", "layerName"), session = session
+  )
+
+  if (length(out) == 0) {
+    return(NULL)
+  }
+  if (length(out$ID) == 0) {
+    return(list(ID = NA))
+  }
+
+  return(out)
 }

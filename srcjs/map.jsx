@@ -26,18 +26,20 @@ function Map({ configuration, value, setValue }) {
 			style: 'mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp',
 			center: [configuration.longitude, configuration.latitude],
 			zoom: configuration.zoom,
-			transformRequest: (url, resourceType) => {
-				if (resourceType === 'Source' && url.indexOf('http://') > -1) {
-					return {
-						url: url.replace('http', 'https'),
-						headers: { 'my-custom-header': true },
-						credentials: 'include', // Include cookies for cross-origin requests
-					}
-				}
-			},
 		})
-		const nav = new mapboxgl.NavigationControl()
-		map.current.addControl(nav, 'bottom-right')
+
+		// Once on the app, the map does not take the whole space of the div
+		// This is a workaround to resize the map and make it fit the div
+		const resizeObserver = new ResizeObserver(() => {
+			map.current.resize()
+		})
+
+		resizeObserver.observe(mapContainer.current)
+
+		return () => {
+			map.current.remove()
+			resizeObserver.disconnect()
+		}
 	}, [])
 
 	// Update the map center and zoom when the configuration changes

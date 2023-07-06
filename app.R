@@ -45,7 +45,7 @@ map_js_server <- function(id) {
     observeEvent(input$button, {
       update_map(session = session,
                  map_ID = "map",
-                 configuration = list(tileset = "mtl_CMA_CT",
+                 configuration = list(tileset = "mtl_CMA_auto_zoom",
                                       fill_colour = jsonlite::toJSON(fill_colour)))
     })
 
