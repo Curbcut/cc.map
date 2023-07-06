@@ -6,8 +6,8 @@
 #' @param map_ID <`character`> A unique identifier for the map input.
 #' @param username <`character`> Mapbox username, where the tilesets live.
 #' @param token <`character`> Necessary token to access mapbox.
-#' @param lon <`numeric`> The longitude value for the initial map center.
-#' @param lat <`numeric`> The latitude value for the initial map center.
+#' @param longitude <`numeric`> The longitude value for the initial map center.
+#' @param latitude <`numeric`> The latitude value for the initial map center.
 #' @param zoom <`numeric`> The zoom level for the initial map display.
 #' @param tileset_prefix <`numeric`> The prefix for the tileset to be used with the map.
 #' This will be used only for the stories tileset.
@@ -23,7 +23,7 @@
 #' @importFrom htmltools htmlDependency tags div
 #'
 #' @export
-map_input <- function(map_ID, username, token, lon, lat, zoom, tileset_prefix,
+map_input <- function(map_ID, username, token, longitude, latitude, zoom, tileset_prefix,
                       div_height = "100vh", div_width = "100%") {
 
   style <- sprintf("height: %s; width: %s", div_height, div_width)
@@ -46,8 +46,8 @@ map_input <- function(map_ID, username, token, lon, lat, zoom, tileset_prefix,
     list(
       username = username,
       token = token,
-      lon = lon,
-      lat = lat,
+      longitude = longitude,
+      latitude = latitude,
       zoom = zoom,
       stories = stories
     ),

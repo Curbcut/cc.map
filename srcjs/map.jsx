@@ -24,7 +24,7 @@ function Map({ configuration, value, setValue }) {
 		map.current = new mapboxgl.Map({
 			container: mapContainer.current,
 			style: 'mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp',
-			center: [configuration.lon, configuration.lat],
+			center: [configuration.longitude, configuration.latitude],
 			zoom: configuration.zoom,
 			transformRequest: (url, resourceType) => {
 				if (resourceType === 'Source' && url.indexOf('http://') > -1) {
@@ -43,13 +43,17 @@ function Map({ configuration, value, setValue }) {
 	// Update the map center and zoom when the configuration changes
 	useEffect(() => {
 		if (!map.current) return
-		if (!configuration.lon || !configuration.lat || !configuration.zoom)
+		if (
+			!configuration.longitude ||
+			!configuration.latitude ||
+			!configuration.zoom
+		)
 			return
 
 		// Update map center and zoom
-		map.current.setCenter([configuration.lon, configuration.lat])
+		map.current.setCenter([configuration.longitude, configuration.latitude])
 		map.current.setZoom(configuration.zoom)
-	}, [configuration.lon, configuration.lat, configuration.zoom])
+	}, [configuration.longitude, configuration.latitude, configuration.zoom])
 
 	// Add/update the source layers to the map
 	MapTile({ map, configuration, click, token, username })

@@ -13,7 +13,12 @@ function NavData({ map, setValue }) {
 			const zoom = map.current.getZoom().toFixed(2)
 
 			// Do the asme set value but also add naming
-			setValue({ lon: lon, lat: lat, zoom: zoom, event: 'viewstate' })
+			setValue({
+				longitude: lon,
+				latitude: lat,
+				zoom: zoom,
+				event: 'viewstate',
+			})
 			// }, 250) // delay in ms between events
 		}
 

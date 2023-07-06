@@ -44,7 +44,7 @@ get_map_event <- function(map_id, event_type, values, session = shiny::getDefaul
 #' @export
 get_map_viewstate <- function(map_id, session = shiny::getDefaultReactiveDomain()) {
   get_map_event(map_id = map_id, event_type = "viewstate",
-                values = c("lon", "lat", "zoom"), session = session)
+                values = c("longitude", "latitude", "zoom"), session = session)
 }
 
 #' Retrieve Click Information from a Map

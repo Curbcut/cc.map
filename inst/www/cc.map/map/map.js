@@ -18468,8 +18468,8 @@ function NavData(_ref) {
 
       // Do the asme set value but also add naming
       setValue({
-        lon: lon,
-        lat: lat,
+        longitude: lon,
+        latitude: lat,
         zoom: zoom,
         event: 'viewstate'
       });
@@ -18673,7 +18673,7 @@ function Map(_ref) {
     map.current = new mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp',
-      center: [configuration.lon, configuration.lat],
+      center: [configuration.longitude, configuration.latitude],
       zoom: configuration.zoom,
       transformRequest: function transformRequest(url, resourceType) {
         if (resourceType === 'Source' && url.indexOf('http://') > -1) {
@@ -18695,12 +18695,12 @@ function Map(_ref) {
   // Update the map center and zoom when the configuration changes
   Object(react__WEBPACK_IMPORTED_MODULE_2__["useEffect"])(function () {
     if (!map.current) return;
-    if (!configuration.lon || !configuration.lat || !configuration.zoom) return;
+    if (!configuration.longitude || !configuration.latitude || !configuration.zoom) return;
 
     // Update map center and zoom
-    map.current.setCenter([configuration.lon, configuration.lat]);
+    map.current.setCenter([configuration.longitude, configuration.latitude]);
     map.current.setZoom(configuration.zoom);
-  }, [configuration.lon, configuration.lat, configuration.zoom]);
+  }, [configuration.longitude, configuration.latitude, configuration.zoom]);
 
   // Add/update the source layers to the map
   Object(_components_MapTile_js__WEBPACK_IMPORTED_MODULE_5__["default"])({

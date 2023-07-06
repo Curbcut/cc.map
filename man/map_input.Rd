@@ -8,8 +8,8 @@ map_input(
   map_ID,
   username,
   token,
-  lon,
-  lat,
+  longitude,
+  latitude,
   zoom,
   tileset_prefix,
   div_height = "100vh",
@@ -23,9 +23,9 @@ map_input(
 
 \item{token}{<\code{character}> Necessary token to access mapbox.}
 
-\item{lon}{<\code{numeric}> The longitude value for the initial map center.}
+\item{longitude}{<\code{numeric}> The longitude value for the initial map center.}
 
-\item{lat}{<\code{numeric}> The latitude value for the initial map center.}
+\item{latitude}{<\code{numeric}> The latitude value for the initial map center.}
 
 \item{zoom}{<\code{numeric}> The zoom level for the initial map display.}
 
