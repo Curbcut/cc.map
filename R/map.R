@@ -11,6 +11,11 @@
 #' @param zoom <`numeric`> The zoom level for the initial map display.
 #' @param tileset_prefix <`numeric`> The prefix for the tileset to be used with the map.
 #' This will be used only for the stories tileset.
+#' @param div_height <`character`> Height of the input. The map will take 100%
+#' of the space. Defaults to the entire viewport (100vh).
+#' @param div_width <`character`> Width of the input. The map will take 100%
+#' of the space. Defaults to 100% of the width of the viewport (100%).
+#'
 #'
 #' @return A React Shiny input widget for the map.
 #'
@@ -18,9 +23,15 @@
 #' @importFrom htmltools htmlDependency tags div
 #'
 #' @export
-map_input <- function(map_ID, username, token, lon, lat, zoom, tileset_prefix) {
+map_input <- function(map_ID, username, token, lon, lat, zoom, tileset_prefix,
+                      div_height = "100vh", div_width = "100%") {
+
+  style <- sprintf("height: %s; width: %s", div_height, div_width)
+  div <- function(...) {
+    do.call(htmltools::tags$div, list(style = style, ...))
+  }
+
   stories <- sprintf("%s_stories", tileset_prefix)
-  print("pasa algo")
   reactR::createReactShinyInput(
     map_ID,
     "map",
@@ -40,7 +51,7 @@ map_input <- function(map_ID, username, token, lon, lat, zoom, tileset_prefix) {
       zoom = zoom,
       stories = stories
     ),
-    htmltools::tags$div
+    div
   )
 }
 
