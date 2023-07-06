@@ -3,7 +3,7 @@ var path = require('path');
 module.exports = {
     entry: path.join(__dirname, 'srcjs', 'map.jsx'),
     output: {
-        path: path.join(__dirname, 'inst/www/cc.map.input/map'),
+        path: path.join(__dirname, 'inst/www/cc.map/map'),
         filename: 'map.js'
     },
     module: {

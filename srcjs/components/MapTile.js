@@ -2,15 +2,19 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import LayerJson from './LayerJson'
 import { jsonToColorMap, createStyleFunction } from '../mapUtils'
 
-function MapTile({ map, configuration, click, pickable = 'true' }) {
+function MapTile({
+	map,
+	configuration,
+	click,
+	pickable = 'true',
+	token,
+	username,
+}) {
 	const [sourceLayers, setSourceLayers] = useState(null)
 	const layerIdsRef = useRef([])
 	const clickedPolygonIdRef = useRef(null)
 
 	const currentMap = map.current
-	const username = 'curbcut'
-	const token =
-		'pk.eyJ1IjoiY3VyYmN1dCIsImEiOiJjbGprYnVwOTQwaDAzM2xwaWdjbTB6bzdlIn0.Ks1cOI6v2i8jiIjk38s_kg'
 
 	// Get the source layers in the active tileset
 	LayerJson({

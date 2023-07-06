@@ -1,5 +1,38 @@
-# library(cc.map)
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# cc.map
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of cc.map is to …
+
+## Installation
+
+You can install the development version of cc.map from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("Curbcut/cc.map")
+```
+
+To compile the React code (unnecessary for use, necessary for
+development), use previous version of node to run webpack (in terminal).
+
+``` r
+NODE_OPTIONS=--openssl-legacy-provider yarn run webpack --mode=development
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+``` r
+library(cc.map)
 library(shiny)
+#> Warning: package 'shiny' was built under R version 4.3.1
 
 # Fill data ---------------------------------------------------------------
 
@@ -17,11 +50,7 @@ ui <- fluidPage(
   actionButton("button2", "just change color"),
   actionButton("button3", "add a selection"),
   actionButton("button4", "change viewstate"),
-  # shiny::tags$div(style = "height:100vh", {
-    map_input("map", username = "curbcut", token = 'pk.eyJ1IjoiY3VyYmN1dCIsImEiOiJjbGprYnVwOTQwaDAzM2xwaWdjbTB6bzdlIn0.Ks1cOI6v2i8jiIjk38s_kg',
-              lon = -73.5, lat = 45.5, zoom = 9, tileset_prefix = "mtl")
-  # })
-
+  map_input("map", lon = -73.5, lat = 45.5, zoom = 9, tileset_prefix = "mtl")
 )
 
 server <- function(input, output, session) {
@@ -73,4 +102,10 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
+#> 
+#> Listening on http://127.0.0.1:5189
+#> Warning: Error in if: argument is of length zero
+#> Warning: Error in if: argument is of length zero
+```
 
+<img src="man/figures/README-example-1.png" width="100%" />

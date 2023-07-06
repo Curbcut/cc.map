@@ -7,16 +7,16 @@ import MapTile from './components/MapTile.js'
 import GetClick from './components/GetClick.js'
 import Stories from './components/Stories.js'
 
-mapboxgl.accessToken =
-	'pk.eyJ1IjoiY3VyYmN1dCIsImEiOiJjbGprYnVwOTQwaDAzM2xwaWdjbTB6bzdlIn0.Ks1cOI6v2i8jiIjk38s_kg'
-
 function Map({ configuration, value, setValue }) {
+	const [token, setToken] = useState(configuration.token)
+	mapboxgl.accessToken = token
+	const [username, setUsername] = useState(configuration.username)
+
 	const mapContainer = useRef(null)
 	const map = useRef(null)
-	const [zoom, setZoom] = useState(configuration.zoom)
 	const [click, setClick] = useState({
 		ID: [],
-		sourceLayer: [],
+		layerName: [],
 		mapID: [],
 	})
 
@@ -52,7 +52,7 @@ function Map({ configuration, value, setValue }) {
 	}, [configuration.lon, configuration.lat, configuration.zoom])
 
 	// Add/update the source layers to the map
-	MapTile({ map, configuration, click })
+	MapTile({ map, configuration, click, token, username })
 
 	// Update the coordinates to the shiny input
 	NavData({ map, setValue })
@@ -67,7 +67,7 @@ function Map({ configuration, value, setValue }) {
 		<div
 			ref={mapContainer}
 			className='map-container'
-			style={{ height: '100vh' }}
+			style={{ height: '100%', width: '100%' }}
 		/>
 	)
 }

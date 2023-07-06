@@ -18123,21 +18123,21 @@ function GetClick(_ref) {
       });
 
       var ID = (_notSimpleFeatures$ = notSimpleFeatures[0]) === null || _notSimpleFeatures$ === void 0 ? void 0 : _notSimpleFeatures$.properties.ID;
-      var sourceLayer = (_notSimpleFeatures$2 = notSimpleFeatures[0]) === null || _notSimpleFeatures$2 === void 0 ? void 0 : _notSimpleFeatures$2.layer['source-layer'];
+      var layerName = (_notSimpleFeatures$2 = notSimpleFeatures[0]) === null || _notSimpleFeatures$2 === void 0 ? void 0 : _notSimpleFeatures$2.layer['source-layer'];
       var mapID = (_notSimpleFeatures$3 = notSimpleFeatures[0]) === null || _notSimpleFeatures$3 === void 0 ? void 0 : _notSimpleFeatures$3.id;
 
       // If the user clicks on the same feature, then we want to deselect it
       if (click.ID === ID) {
         return setClick({
           ID: [],
-          sourceLayer: []
+          layerName: []
         });
       }
 
       // Otherwise, we want to select the feature
       setClick({
         ID: ID,
-        sourceLayer: sourceLayer
+        layerName: layerName
       });
     };
     if (currentMap) {
@@ -18231,7 +18231,9 @@ function MapTile(_ref) {
     configuration = _ref.configuration,
     click = _ref.click,
     _ref$pickable = _ref.pickable,
-    pickable = _ref$pickable === void 0 ? 'true' : _ref$pickable;
+    pickable = _ref$pickable === void 0 ? 'true' : _ref$pickable,
+    token = _ref.token,
+    username = _ref.username;
   var _useState = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(null),
     _useState2 = _slicedToArray(_useState, 2),
     sourceLayers = _useState2[0],
@@ -18239,8 +18241,6 @@ function MapTile(_ref) {
   var layerIdsRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])([]);
   var clickedPolygonIdRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])(null);
   var currentMap = map.current;
-  var username = 'curbcut';
-  var token = 'pk.eyJ1IjoiY3VyYmN1dCIsImEiOiJjbGprYnVwOTQwaDAzM2xwaWdjbTB6bzdlIn0.Ks1cOI6v2i8jiIjk38s_kg';
 
   // Get the source layers in the active tileset
   Object(_LayerJson__WEBPACK_IMPORTED_MODULE_1__["default"])({
@@ -18509,12 +18509,13 @@ __webpack_require__.r(__webpack_exports__);
 
 function Stories(_ref) {
   var map = _ref.map,
-    configuration = _ref.configuration;
+    configuration = _ref.configuration,
+    username = _ref.username;
   var currentMap = map.current;
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     if (!currentMap) return;
     if (!configuration.stories) return;
-    var url = "mapbox://curbcut.".concat(configuration.stories);
+    var url = "mapbox://".concat(username, ".").concat(configuration.stories);
     var hoveredPolygonId = null;
     currentMap.addSource(configuration.stories, {
       type: 'vector',
@@ -18645,25 +18646,29 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 
 
-mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.accessToken = 'pk.eyJ1IjoiY3VyYmN1dCIsImEiOiJjbGprYnVwOTQwaDAzM2xwaWdjbTB6bzdlIn0.Ks1cOI6v2i8jiIjk38s_kg';
 function Map(_ref) {
   var configuration = _ref.configuration,
     value = _ref.value,
     setValue = _ref.setValue;
+  var _useState = Object(react__WEBPACK_IMPORTED_MODULE_2__["useState"])(configuration.token),
+    _useState2 = _slicedToArray(_useState, 2),
+    token = _useState2[0],
+    setToken = _useState2[1];
+  mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.accessToken = token;
+  var _useState3 = Object(react__WEBPACK_IMPORTED_MODULE_2__["useState"])(configuration.username),
+    _useState4 = _slicedToArray(_useState3, 2),
+    username = _useState4[0],
+    setUsername = _useState4[1];
   var mapContainer = Object(react__WEBPACK_IMPORTED_MODULE_2__["useRef"])(null);
   var map = Object(react__WEBPACK_IMPORTED_MODULE_2__["useRef"])(null);
-  var _useState = Object(react__WEBPACK_IMPORTED_MODULE_2__["useState"])(configuration.zoom),
-    _useState2 = _slicedToArray(_useState, 2),
-    zoom = _useState2[0],
-    setZoom = _useState2[1];
-  var _useState3 = Object(react__WEBPACK_IMPORTED_MODULE_2__["useState"])({
+  var _useState5 = Object(react__WEBPACK_IMPORTED_MODULE_2__["useState"])({
       ID: [],
-      sourceLayer: [],
+      layerName: [],
       mapID: []
     }),
-    _useState4 = _slicedToArray(_useState3, 2),
-    click = _useState4[0],
-    setClick = _useState4[1];
+    _useState6 = _slicedToArray(_useState5, 2),
+    click = _useState6[0],
+    setClick = _useState6[1];
   Object(react__WEBPACK_IMPORTED_MODULE_2__["useEffect"])(function () {
     map.current = new mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.Map({
       container: mapContainer.current,
@@ -18701,7 +18706,9 @@ function Map(_ref) {
   Object(_components_MapTile_js__WEBPACK_IMPORTED_MODULE_5__["default"])({
     map: map,
     configuration: configuration,
-    click: click
+    click: click,
+    token: token,
+    username: username
   });
 
   // Update the coordinates to the shiny input
@@ -18728,7 +18735,8 @@ function Map(_ref) {
     ref: mapContainer,
     className: "map-container",
     style: {
-      height: '100vh'
+      height: '100%',
+      width: '100%'
     }
   });
 }

@@ -1,14 +1,14 @@
 import { useEffect } from 'react'
 import mapboxgl from 'mapbox-gl'
 
-function Stories({ map, configuration }) {
+function Stories({ map, configuration, username }) {
 	const currentMap = map.current
 
 	useEffect(() => {
 		if (!currentMap) return
 		if (!configuration.stories) return
 
-		const url = `mapbox://curbcut.${configuration.stories}`
+		const url = `mapbox://${username}.${configuration.stories}`
 
 		let hoveredPolygonId = null
 

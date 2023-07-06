@@ -24,21 +24,21 @@ function GetClick({ map, click, setClick, setValue, configuration }) {
 			})
 
 			const ID = notSimpleFeatures[0]?.properties.ID
-			const sourceLayer = notSimpleFeatures[0]?.layer['source-layer']
+			const layerName = notSimpleFeatures[0]?.layer['source-layer']
 			const mapID = notSimpleFeatures[0]?.id
 
 			// If the user clicks on the same feature, then we want to deselect it
 			if (click.ID === ID) {
 				return setClick({
 					ID: [],
-					sourceLayer: [],
+					layerName: [],
 				})
 			}
 
 			// Otherwise, we want to select the feature
 			setClick({
 				ID,
-				sourceLayer,
+				layerName,
 			})
 		}
 
