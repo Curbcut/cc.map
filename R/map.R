@@ -69,9 +69,8 @@ map_input <- function(map_ID, username, token, longitude, latitude, zoom, tilese
 #'  `lat`, `lon`, and `zoom`, as numeric.
 #' - `select_id`: A character value to update the selected feature on the map.
 #' Selection must be in the viewport for the feature to get updated. Update viewstate first.
-#' - `fill_colour`: A tibble with two columns: 'ID_color' and 'fill'. ID_color is
-#' the ID of the feature, and fill are hexes of 6 digits. The tibble needs to be converted
-#' to `jsonlite::toJSON` before sending as a configuration.
+#' - `fill_colour`: A tibble with two columns: 'ID' and 'fill'. ID is
+#' the ID of the feature, and fill are hexes of 6 digits.
 #' - `tileset`: A character value to update the tileset used for rendering the map.
 #' Should be used in combination with `fill_colour`.
 #'
@@ -80,6 +79,18 @@ map_input <- function(map_ID, username, token, longitude, latitude, zoom, tilese
 #' @export
 update_map <- function(session, map_ID, configuration = NULL) {
   message <- list(value = map_ID)
-  if (!is.null(configuration)) message$configuration <- configuration
+  if (!is.null(configuration)) {
+
+    if ("fill_colour" %in% names(configuration)) {
+      configuration$fill_colour <- {
+        out <- configuration$fill_colour
+        names(out)[names(out) == "ID"] <- "ID_color"
+        jsonlite::toJSON(out)
+      }
+    }
+
+    message$configuration <- configuration
+
+  }
   session$sendInputMessage(map_ID, message)
 }

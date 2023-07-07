@@ -4,7 +4,6 @@ library(shiny)
 # Fill data ---------------------------------------------------------------
 
 fill_colour <- qs::qread(system.file("data_colour.qs", package = "cc.map"))
-names(fill_colour)[1] <- "ID_color"
 
 
 # UI / server -------------------------------------------------------------
@@ -46,7 +45,7 @@ map_js_server <- function(id) {
       update_map(session = session,
                  map_ID = "map",
                  configuration = list(tileset = "mtl_CMA_auto_zoom",
-                                      fill_colour = jsonlite::toJSON(fill_colour)))
+                                      fill_colour = fill_colour))
     })
 
     # Just update fill colours
@@ -56,7 +55,7 @@ map_js_server <- function(id) {
 
       update_map(session = session,
                  map_ID = "map",
-                 configuration = list(fill_colour = jsonlite::toJSON(fl_c)))
+                 configuration = list(fill_colour = fl_c))
     })
 
     # Select a random census tract ID (click on first button first to get a CT tileset)

@@ -67,7 +67,7 @@ function Map({ configuration, value, setValue }) {
 	GetClick({ map, click, setClick, setValue, configuration })
 
 	// Add stories icons to the map
-	Stories({ map, configuration })
+	Stories({ map, configuration, username })
 
 	return (
 		<div

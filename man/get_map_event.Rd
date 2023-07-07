@@ -33,7 +33,9 @@ retrieved are defined in \code{values}.
 }
 \examples{
 \dontrun{
-get_map_event(map_id = "map", event_type = "viewstate",
-              values = c("lon", "lat", "zoom"))
+get_map_event(
+  map_id = "map", event_type = "viewstate",
+  values = c("lon", "lat", "zoom")
+)
 }
 }

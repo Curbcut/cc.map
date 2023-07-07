@@ -18726,7 +18726,8 @@ function Map(_ref) {
   // Add stories icons to the map
   Object(_components_Stories_js__WEBPACK_IMPORTED_MODULE_7__["default"])({
     map: map,
-    configuration: configuration
+    configuration: configuration,
+    username: username
   });
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement("div", {
     ref: mapContainer,
