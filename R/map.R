@@ -24,7 +24,7 @@
 #'
 #' @export
 map_input <- function(map_ID, username, token, longitude, latitude, zoom, tileset_prefix,
-                      div_height = "100vh", div_width = "100%") {
+                      stories, div_height = "100vh", div_width = "100%") {
 
   style <- sprintf("height: %s; width: %s", div_height, div_width)
   div <- function(...) {

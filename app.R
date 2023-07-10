@@ -21,7 +21,8 @@ map_js_UI <- function(id) {
       longitude = -73.5,
       latitude = 45.5,
       zoom = 9,
-      tileset_prefix = "mtl")
+      tileset_prefix = "mtl",
+      stories = "mtl_stories")
   )
 }
 

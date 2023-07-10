@@ -21,9 +21,11 @@
 #' }
 #' @export
 get_map_event <- function(map_id, event_type, values, session = shiny::getDefaultReactiveDomain()) {
-  if (!is.na(session$input[[map_id]]["event"])) {
-    if (session$input[[map_id]]["event"] == event_type) {
-      return(session$input[[map_id]][values])
+  if (!is.null(session$input[[map_id]]["event"])) {
+    if (!is.na(session$input[[map_id]]["event"])) {
+      if (session$input[[map_id]]["event"] == event_type) {
+        return(session$input[[map_id]][values])
+      }
     }
   }
 }
