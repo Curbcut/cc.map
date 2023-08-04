@@ -42,7 +42,7 @@ map_input <- function(map_ID, username, token, longitude, latitude, zoom, tilese
     username = username,
     token = token,
     lang = lang,
-    style = style,
+    style = map_style_id,
     viewstate = list(longitude = longitude,
                      latitude = latitude,
                      zoom = zoom)
