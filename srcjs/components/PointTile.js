@@ -1,0 +1,238 @@
+import { useEffect, useRef, useState, useMemo } from 'react'
+import LayerJson from './LayerJson'
+import HandleFilter from './PointTile/HandleFilter'
+import HandleRadius from './PointTile/HandleRadius'
+
+function PointTile({ map, configState, username, token }) {
+	const layerIdsRef = useRef([])
+	const mapRef = useRef()
+
+	useEffect(() => {
+		mapRef.current = map.current
+	}, [map])
+
+	const tileset = useMemo(() => {
+		if (!configState.heatmap) return null
+		if (!configState.heatmap.tileset) return null
+
+		return configState.heatmap ? configState.heatmap.tileset : null
+	}, [configState.heatmap])
+	const pickable = useMemo(() => {
+		if (!configState.heatmap) return null
+		if (!configState.heatmap.pickable) return null
+
+		return configState.heatmap ? configState.heatmap.pickable : false
+	}, [configState.heatmap])
+
+	// Load the sourceLayers depending on configState.tileset
+	const [sourceLayers, setSourceLayers] = useState({
+		vector_layers: [],
+		url: '',
+	})
+	// Get the source layers in the active tileset
+	LayerJson({
+		setSourceLayers,
+		username,
+		tileset: tileset,
+		token,
+	})
+
+	useEffect(() => {
+		// ensure the map object is initialized
+		if (!mapRef.current) return null
+		if (!tileset) return null
+		if (sourceLayers.vector_layers.length === 0) return null
+
+		const layers = mapRef.current.getStyle().layers
+		const buildingLayerId = layers.find(
+			(layer) => layer.type === 'symbol' && layer.id.includes('label')
+		).id
+
+		const handleLoad = () => {
+			// Keep track of added layers
+			const layerIds = []
+			let hoveredPointId = null
+
+			// Add the source layers to the map
+			sourceLayers.vector_layers?.forEach((sourceLayer, index) => {
+				const layerId = `${sourceLayer.id}-${index}`
+				layerIds.push(layerId) // add the layer id to our array of added layers
+
+				mapRef.current.addSource(layerId, {
+					type: 'vector',
+					url: sourceLayers.url,
+				})
+
+				// Add the heatmap layer
+				mapRef.current.addLayer(
+					{
+						id: layerId,
+						type: 'heatmap',
+						source: layerId,
+						'source-layer': sourceLayer.id,
+						minzoom: sourceLayer.minzoom,
+						maxzoom: sourceLayer.maxzoom,
+						paint: {
+							// Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+							// Begin color ramp at 0-stop with a 0-transparancy color
+							// to create a blur-like effect.
+							'heatmap-color': [
+								'interpolate',
+								['linear'],
+								['heatmap-density'],
+								0,
+								'rgba(33,102,172,0)',
+								0.25,
+								'rgb(203,194,255)',
+								0.5,
+								'rgb(251,213,98)',
+								0.75,
+								'rgb(238,128,93)',
+								1,
+								'rgb(219,106,140)',
+							],
+							// Transition from heatmap to circle layer by zoom level
+							'heatmap-opacity': [
+								'interpolate',
+								['linear'],
+								['zoom'],
+								15,
+								1,
+								16,
+								0,
+							],
+						},
+					},
+					buildingLayerId
+				)
+
+				// Add a layer with the points
+				mapRef.current.addLayer(
+					{
+						id: layerId + '-point',
+						type: 'circle',
+						source: layerId,
+						'source-layer': sourceLayer.id,
+						minzoom: sourceLayer.minzoom,
+						maxzoom: sourceLayer.maxzoom,
+						paint: {
+							// Increase the radius of the circle as the zoom level and dbh value increases
+							'circle-radius': [
+								'interpolate',
+								['linear'],
+								['zoom'],
+								10,
+								0,
+								12,
+								1,
+								22,
+								15,
+							],
+							'circle-color': [
+								'case',
+								['boolean', ['feature-state', 'hover'], false],
+								'rgba(219,106,140,1)',
+								'rgba(219,106,140,0.5)',
+							],
+							'circle-stroke-color': 'white',
+							'circle-stroke-width': 1,
+							'circle-opacity': [
+								'interpolate',
+								['linear'],
+								['zoom'],
+								15,
+								0,
+								16,
+								1,
+							],
+						},
+					},
+					'road-label-simple'
+				)
+
+				// Add the layer id to our array of added layers
+				layerIdsRef.current = layerIds
+
+				// If the layer is not pickable, then we don't want to add the hover effect
+				if (!pickable) return null
+
+				// On the layer, set the feature state to `hover: true` when the mouse
+				// is over it.
+				mapRef.current.on('mousemove', layerId, (e) => {
+					if (e.features.length > 0) {
+						if (hoveredPointId !== null) {
+							mapRef.current.setFeatureState(
+								{
+									source: layerId,
+									sourceLayer: sourceLayer.id,
+									id: hoveredPointId,
+								},
+								{ hover: false }
+							)
+						}
+						hoveredPointId = e.features[0].id
+						mapRef.current.setFeatureState(
+							{
+								source: layerId,
+								sourceLayer: sourceLayer.id,
+								id: hoveredPointId,
+							},
+							{ hover: true }
+						)
+					}
+				})
+
+				// When the mouse leaves the layer, update the feature state of the
+				// previously hovered feature.
+				mapRef.current.on('mouseleave', layerId, () => {
+					if (hoveredPointId !== null) {
+						mapRef.current.setFeatureState(
+							{
+								source: layerId,
+								sourceLayer: sourceLayer.id,
+								id: hoveredPointId,
+							},
+							{ hover: false }
+						)
+					}
+					hoveredPointId = null
+				})
+			})
+		}
+
+		// This function will clean up (remove) layers added from previous runs of this effect
+		const removeLayers = () => {
+			layerIdsRef.current.forEach((layerId) => {
+				if (mapRef.current.getLayer(layerId)) {
+					mapRef.current.off('mousemove', layerId)
+					mapRef.current.off('mouseleave', layerId)
+					mapRef.current.removeLayer(layerId + '-point')
+					mapRef.current.removeLayer(layerId)
+					mapRef.current.removeSource(layerId)
+				}
+			})
+
+			// Clear the ref after removing layers
+			layerIdsRef.current = []
+		}
+
+		removeLayers() // Remove existing layers first
+		handleLoad() // Add new layers afterwards
+
+		// Cleanup function to run when component is unmounted or when dependencies change
+		return () => {
+			mapRef.current.off('load')
+			removeLayers() // Remove existing layers
+		}
+	}, [
+		sourceLayers.vector_layers,
+		sourceLayers.url,
+		pickable,
+		setSourceLayers,
+		tileset,
+	])
+
+	HandleFilter({ map, configState, sourceLayers })
+	HandleRadius({ map, configState, sourceLayers })
+}
+export default PointTile

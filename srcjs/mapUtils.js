@@ -1,5 +1,6 @@
 export const jsonToColorMap = (json) => {
 	// Return null if json is undefined
+	if (!json) return null
 	if (json === undefined) return null
 
 	const colorMap = {}
@@ -14,6 +15,7 @@ export const jsonToColorMap = (json) => {
 }
 
 export const createStyleFunction = (colorMap) => {
+	if (!colorMap) return null
 	const defaultColor = 'transparent' // fallback color
 
 	// If there is no colorMap, then return the default color

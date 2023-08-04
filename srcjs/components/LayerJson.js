@@ -1,17 +1,26 @@
 import { useEffect } from 'react'
 
-function LayerJson({ setSourceLayers, username, configuration, token }) {
+function LayerJson({ setSourceLayers, username, tileset, token }) {
 	useEffect(() => {
-		if (!configuration.tileset) return null
+		if (!tileset) return null
+		if (tileset === 'remove') {
+			setSourceLayers({ vector_layers: [], url: '' })
+			return null
+		}
 
-		const layerUrl = `https://api.mapbox.com/v4/${username}.${configuration.tileset}.json?secure&access_token=${token}`
+		const layerUrl = `https://api.mapbox.com/v4/${username}.${tileset}.json?secure&access_token=${token}`
 		fetch(layerUrl)
 			.then((response) => response.json())
 			.then((srcLayers) => {
-				setSourceLayers(srcLayers?.vector_layers)
+				const url = `mapbox://${username}.${tileset}`
+
+				setSourceLayers({
+					vector_layers: srcLayers?.vector_layers,
+					url: url,
+				})
 			})
 			.catch((error) => console.error('Error:', error))
-	}, [username, configuration.tileset, token, setSourceLayers])
+	}, [username, tileset, token, setSourceLayers])
 
 	return null
 }

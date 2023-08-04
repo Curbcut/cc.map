@@ -11,11 +11,16 @@
 #' @param zoom <`numeric`> The zoom level for the initial map display.
 #' @param tileset_prefix <`numeric`> The prefix for the tileset to be used with the map.
 #' This will be used only for the stories tileset.
+#' @param map_style_id <`character`> Full map identifier link, e.g.
+#' `"mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp"`.
+#' @param lang <`character`> Default language of the app. This will inform
+#' which stories preview is shown.
+#' @param stories <`data.frame`> The stories dataframe. Defaults to NULL if no
+#' stories is to be added to the map.
 #' @param div_height <`character`> Height of the input. The map will take 100%
 #' of the space. Defaults to the entire viewport (100vh).
 #' @param div_width <`character`> Width of the input. The map will take 100%
 #' of the space. Defaults to 100% of the width of the viewport (100%).
-#'
 #'
 #' @return A React Shiny input widget for the map.
 #'
@@ -24,14 +29,31 @@
 #'
 #' @export
 map_input <- function(map_ID, username, token, longitude, latitude, zoom, tileset_prefix,
-                      stories, div_height = "100vh", div_width = "100%") {
+                      map_style_id, stories = NULL, lang = "en", div_height = "100vh",
+                      div_width = "100%") {
 
-  style <- sprintf("height: %s; width: %s", div_height, div_width)
+  div_style <- sprintf("height: %s; width: %s", div_height, div_width)
   div <- function(...) {
-    do.call(htmltools::tags$div, list(style = style, ...))
+    do.call(htmltools::tags$div, list(style = div_style, ...))
   }
 
-  stories <- sprintf("%s_stories", tileset_prefix)
+  # All default configurations
+  configurations <- list(
+    username = username,
+    token = token,
+    lang = lang,
+    style = style,
+    viewstate = list(longitude = longitude,
+                     latitude = latitude,
+                     zoom = zoom)
+  )
+
+  # If NULL, no stories added.
+  if (!is.null(stories)) {
+    configurations$stories <- sprintf("%s_stories", tileset_prefix)
+    configurations$stories_img <- sapply(stories$img_base64, list) |> jsonlite::toJSON()
+  }
+
   reactR::createReactShinyInput(
     map_ID,
     "map",
@@ -43,14 +65,7 @@ map_input <- function(map_ID, username, token, longitude, latitude, zoom, tilese
       script = "map.js"
     ),
     "",
-    list(
-      username = username,
-      token = token,
-      longitude = longitude,
-      latitude = latitude,
-      zoom = zoom,
-      stories = stories
-    ),
+    configurations,
     div
   )
 }
@@ -75,22 +90,12 @@ map_input <- function(map_ID, username, token, longitude, latitude, zoom, tilese
 #' Should be used in combination with `fill_colour`.
 #'
 #' @return None.
-#'
-#' @export
 update_map <- function(session, map_ID, configuration = NULL) {
   message <- list(value = map_ID)
+
   if (!is.null(configuration)) {
-
-    if ("fill_colour" %in% names(configuration)) {
-      configuration$fill_colour <- {
-        out <- configuration$fill_colour
-        names(out)[names(out) == "ID"] <- "ID_color"
-        jsonlite::toJSON(out)
-      }
-    }
-
     message$configuration <- configuration
-
   }
+
   session$sendInputMessage(map_ID, message)
 }

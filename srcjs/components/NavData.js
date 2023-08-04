@@ -1,38 +1,36 @@
-import React, { useEffect } from 'react'
-import { debounce } from 'lodash'
+import { useEffect, useRef, useCallback } from 'react'
 
 function NavData({ map, setValue }) {
+	const mapRef = useRef()
+
+	const stableSetValue = useCallback(setValue, [])
+
 	useEffect(() => {
-		if (!map.current) return // wait for map to initialize
+		mapRef.current = map.current
+	}, [map]) // sync mapRef.current with map.current
 
-		// No need for `debounce` if we use `moveend` event
+	useEffect(() => {
+		if (!mapRef.current) return // wait for map to initialize
+
 		const handleMove = () => {
-			// debounce(() => {
-			const lon = map.current.getCenter().lng.toFixed(4)
-			const lat = map.current.getCenter().lat.toFixed(4)
-			const zoom = map.current.getZoom().toFixed(2)
+			const lon = mapRef.current.getCenter().lng.toFixed(4)
+			const lat = mapRef.current.getCenter().lat.toFixed(4)
+			const zoom = mapRef.current.getZoom().toFixed(2)
 
-			// Do the asme set value but also add naming
-			setValue({
+			stableSetValue({
 				longitude: lon,
 				latitude: lat,
 				zoom: zoom,
 				event: 'viewstate',
 			})
-			// }, 250) // delay in ms between events
 		}
 
-		// https://davidwalsh.name/javascript-debounce-function
-		// debounce function to limit calls to setValue to once every x ms
-		map.current.on('moveend', handleMove)
+		mapRef.current.on('moveend', handleMove)
 
-		// clean up function to remove event listener when component unmounts
-		// https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
 		return () => {
-			// clean up
-			map.current.off('moveend', handleMove)
+			mapRef.current.off('moveend', handleMove)
 		}
-	}, [map.current])
+	}, [stableSetValue]) // use stableSetValue as a dependency
 }
 
 export default NavData

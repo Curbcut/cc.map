@@ -1,16 +1,85 @@
 import { reactShinyInput } from 'reactR'
+
 import mapboxgl from 'mapbox-gl'
 import React, { useEffect, useRef, useState } from 'react'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import NavData from './components/NavData.js'
-import MapTile from './components/MapTile.js'
-import GetClick from './components/GetClick.js'
-import Stories from './components/Stories.js'
+import NavData from './components/NavData'
+import MapTile from './components/MapTile'
+import GetClick from './components/GetClick'
+import Stories from './components/Stories'
+import PointTile from './components/PointTile'
 
 function Map({ configuration, value, setValue }) {
-	const [token, setToken] = useState(configuration.token)
-	mapboxgl.accessToken = token
-	const [username, setUsername] = useState(configuration.username)
+	// Set configState
+	const [configState, setConfigState] = useState(() => {
+		let state = Object.fromEntries(
+			Object.entries(configuration).map(([key, value]) => {
+				if (typeof value === 'string') {
+					try {
+						value = JSON.parse(value)
+					} catch (e) {}
+				}
+				return [key, value]
+			})
+		)
+		return state
+	})
+
+	// This effect will listen for changes in the configuration prop
+	// and update the configState accordingly
+	// Map over configuration to modify everything to JSON
+	useEffect(() => {
+		const parseConfiguration = (config, keyPath = []) => {
+			return Object.entries(config).reduce((acc, [key, value]) => {
+				const newKeyPath = [...keyPath, key]
+				if (
+					typeof value === 'object' &&
+					value !== null &&
+					!Array.isArray(value)
+				) {
+					acc[key] = parseConfiguration(value, newKeyPath)
+				} else {
+					if (typeof value === 'string') {
+						try {
+							value = JSON.parse(value)
+						} catch (e) {}
+					}
+					acc[key] = value
+				}
+				return acc
+			}, {})
+		}
+
+		const parsedConfiguration = parseConfiguration(configuration)
+
+		setConfigState((prevConfig) => {
+			const updateConfig = (prev, curr, keyPath = []) => {
+				return Object.entries(curr).reduce(
+					(acc, [key, value]) => {
+						const newKeyPath = [...keyPath, key]
+						if (
+							typeof value === 'object' &&
+							value !== null &&
+							!Array.isArray(value)
+						) {
+							if (!(key in acc)) acc[key] = {}
+							acc[key] = updateConfig(acc[key], value, newKeyPath)
+						} else {
+							acc[key] = value
+						}
+						return acc
+					},
+					{ ...prev }
+				)
+			}
+
+			return updateConfig(prevConfig, parsedConfiguration)
+		})
+	}, [configuration])
+
+	mapboxgl.accessToken = configState.token
+	const username = configState.username
+	const token = configState.token
 
 	const mapContainer = useRef(null)
 	const map = useRef(null)
@@ -20,16 +89,35 @@ function Map({ configuration, value, setValue }) {
 		mapID: [],
 	})
 
+	// Inform in console when value changes
+	useEffect(() => {
+		console.log(value)
+	}, [value])
+
+	// Save the initial map center and zoom. We'll use these to create the map object
+	// only once, without warnings.
+	const latitudeRef = useRef(configState.viewstate.latitude)
+	const longitudeRef = useRef(configState.viewstate.longitude)
+	const zoomRef = useRef(configState.viewstate.zoom)
+	// Update the refs when the configuration changes. Ultimately, we only want to use
+	// it once at init.
+	useEffect(() => {
+		latitudeRef.current = configState.viewstate.latitude
+		longitudeRef.current = configState.viewstate.longitude
+		zoomRef.current = configState.viewstate.zoom
+	}, [configState.viewstate])
+	// Create the map object only once, without warnings (using the refs).
+
 	useEffect(() => {
 		map.current = new mapboxgl.Map({
 			container: mapContainer.current,
-			style: 'mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp',
-			center: [configuration.longitude, configuration.latitude],
-			zoom: configuration.zoom,
+			style: configState.style,
+			center: [longitudeRef.current, latitudeRef.current],
+			zoom: zoomRef.current,
 		})
 
-		// Once on the app, the map does not take the whole space of the div
-		// This is a workaround to resize the map and make it fit the div
+		map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right')
+
 		const resizeObserver = new ResizeObserver(() => {
 			map.current.resize()
 		})
@@ -40,34 +128,38 @@ function Map({ configuration, value, setValue }) {
 			map.current.remove()
 			resizeObserver.disconnect()
 		}
-	}, [])
+	}, [configState.style])
 
-	// Update the map center and zoom when the configuration changes
 	useEffect(() => {
 		if (!map.current) return
-		if (
-			!configuration.longitude ||
-			!configuration.latitude ||
-			!configuration.zoom
-		)
-			return
 
 		// Update map center and zoom
-		map.current.setCenter([configuration.longitude, configuration.latitude])
-		map.current.setZoom(configuration.zoom)
-	}, [configuration.longitude, configuration.latitude, configuration.zoom])
+		map.current.setCenter([
+			configState.viewstate.longitude,
+			configState.viewstate.latitude,
+		])
+		map.current.setZoom(configState.viewstate.zoom)
+	}, [configState.viewstate])
 
 	// Add/update the source layers to the map
-	MapTile({ map, configuration, click, token, username })
+	MapTile({
+		map,
+		configState,
+		click,
+		username,
+		token,
+	})
+
+	PointTile({ map, configState, username, token })
 
 	// Update the coordinates to the shiny input
 	NavData({ map, setValue })
 
 	// Save the ID of the clicked tileset to the `click` state
-	GetClick({ map, click, setClick, setValue, configuration })
+	GetClick({ map, click, setClick, setValue, configState })
 
 	// Add stories icons to the map
-	Stories({ map, configuration, username })
+	Stories({ map, configState, username })
 
 	return (
 		<div

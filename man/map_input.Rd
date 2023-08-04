@@ -12,6 +12,9 @@ map_input(
   latitude,
   zoom,
   tileset_prefix,
+  map_style_id,
+  stories = NULL,
+  lang = "en",
   div_height = "100vh",
   div_width = "100\%"
 )
@@ -31,6 +34,15 @@ map_input(
 
 \item{tileset_prefix}{<\code{numeric}> The prefix for the tileset to be used with the map.
 This will be used only for the stories tileset.}
+
+\item{map_style_id}{<\code{character}> Full map identifier link, e.g.
+\code{"mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp"}.}
+
+\item{stories}{<\code{data.frame}> The stories dataframe. Defaults to NULL if no
+stories is to be added to the map.}
+
+\item{lang}{<\code{character}> Default language of the app. This will inform
+which stories preview is shown.}
 
 \item{div_height}{<\code{character}> Height of the input. The map will take 100\%
 of the space. Defaults to the entire viewport (100vh).}

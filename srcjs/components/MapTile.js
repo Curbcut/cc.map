@@ -1,67 +1,93 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
+import BuildingStyle from './MapTile/BuildingStyle'
+import HandleClickStyle from './MapTile/HandleClickStyle'
+import FillColour from './MapTile/FillColour'
 import LayerJson from './LayerJson'
-import { jsonToColorMap, createStyleFunction } from '../mapUtils'
 
-function MapTile({
-	map,
-	configuration,
-	click,
-	pickable = 'true',
-	token,
-	username,
-}) {
-	const [sourceLayers, setSourceLayers] = useState(null)
+function MapTile({ map, configState, click, username, token }) {
 	const layerIdsRef = useRef([])
-	const clickedPolygonIdRef = useRef(null)
+	const mapRef = useRef()
+	const [layersLoaded, setLayersLoaded] = useState(false)
 
-	const currentMap = map.current
+	useEffect(() => {
+		mapRef.current = map.current
+	}, [map])
 
+	const tileset = useMemo(() => {
+		if (!configState.choropleth) return null
+		if (!configState.choropleth.tileset) return null
+
+		return configState.choropleth ? configState.choropleth.tileset : null
+	}, [configState.choropleth])
+	const pickable = useMemo(() => {
+		if (!configState.choropleth) return null
+		if (!configState.choropleth.pickable) return null
+
+		return configState.choropleth ? configState.choropleth.pickable : false
+	}, [configState.choropleth])
+
+	// Load the sourceLayers depending on configState.tileset
+	const [sourceLayers, setSourceLayers] = useState({
+		vector_layers: [],
+		url: '',
+	})
 	// Get the source layers in the active tileset
 	LayerJson({
 		setSourceLayers,
 		username,
-		configuration,
+		tileset: tileset,
 		token,
 	})
 
-	const colorMap = useMemo(
-		() => jsonToColorMap(configuration.fill_colour),
-		[configuration.fill_colour]
-	)
-	const styleFunction = useMemo(
-		() => createStyleFunction(colorMap),
-		[colorMap]
-	)
-
 	useEffect(() => {
 		// ensure the map object is initialized
-		if (!currentMap || !currentMap.isStyleLoaded()) return
+		if (!mapRef.current) return null
+		if (sourceLayers.vector_layers === []) return null
+		if (sourceLayers.vector_layers.length === 0) return null
+
+		// Check if map style is loaded (timeout due to race condition with Stories component)
+		if (!mapRef.current.isStyleLoaded()) {
+			// If not loaded, wait for 250ms and then re-trigger the function
+			const timeoutId = setTimeout(() => {
+				setSourceLayers((oldSourceLayers) => {
+					// Check if oldSourceLayers is iterable
+					if (
+						oldSourceLayers &&
+						typeof oldSourceLayers[Symbol.iterator] === 'function'
+					) {
+						return [...oldSourceLayers]
+					} else {
+						// If it's not iterable, return a default value (like an empty array)
+						return sourceLayers
+					}
+				})
+			}, 250)
+
+			// Return cleanup function to clear the timeout
+			return () => clearTimeout(timeoutId)
+		}
+
+		const layers = mapRef.current.getStyle().layers
+		const buildingLayerId = layers.find(
+			(layer) => layer.type === 'fill' && layer.id.includes('building')
+		).id
 
 		const handleLoad = () => {
-			// Get the layer id that's for the buildings, so we can place our layers underneath it.
-			const layers = currentMap.getStyle().layers
-			const labelLayerId = layers.find(
-				(layer) =>
-					layer.type === 'fill' && layer.id.includes('building')
-				// (layer) => layer.type === 'line' && layer.id.includes('road')
-			).id
-			const url = `mapbox://${username}.${configuration.tileset}`
-
 			// Keep track of added layers
 			const layerIds = []
 
 			// Add the source layers to the map
-			sourceLayers?.forEach((sourceLayer, index) => {
+			sourceLayers.vector_layers?.forEach((sourceLayer, index) => {
 				const layerId = `${sourceLayer.id}-${index}`
 				layerIds.push(layerId) // add the layer id to our array of added layers
 				let hoveredPolygonId = null
-				currentMap.addSource(layerId, {
+				mapRef.current.addSource(layerId, {
 					type: 'vector',
-					url: url,
+					url: sourceLayers.url,
 				})
 
 				// Add the layer
-				currentMap.addLayer(
+				mapRef.current.addLayer(
 					{
 						id: layerId,
 						type: 'fill',
@@ -71,8 +97,8 @@ function MapTile({
 						maxzoom: sourceLayer.maxzoom,
 						layout: {},
 						paint: {
-							'fill-outline-color': styleFunction,
-							'fill-color': styleFunction,
+							'fill-outline-color': 'transparent',
+							'fill-color': 'transparent',
 							'fill-opacity': [
 								'case',
 								['boolean', ['feature-state', 'hover'], false],
@@ -81,11 +107,11 @@ function MapTile({
 							],
 						},
 					},
-					labelLayerId
+					buildingLayerId
 				)
 
 				// Add the outline
-				currentMap.addLayer({
+				mapRef.current.addLayer({
 					id: layerId + '-outline',
 					type: 'line',
 					source: layerId,
@@ -98,7 +124,9 @@ function MapTile({
 							'case',
 							['boolean', ['feature-state', 'click'], false],
 							'#000000',
-							'transparent',
+							layerId.includes('building')
+								? 'lightgrey'
+								: 'transparent',
 						],
 						'line-width': [
 							'case',
@@ -117,10 +145,10 @@ function MapTile({
 
 				// On the layer, set the feature state to `hover: true` when the mouse
 				// is over it.
-				currentMap.on('mousemove', layerId, (e) => {
+				mapRef.current.on('mousemove', layerId, (e) => {
 					if (e.features.length > 0) {
 						if (hoveredPolygonId !== null) {
-							currentMap.setFeatureState(
+							mapRef.current.setFeatureState(
 								{
 									source: layerId,
 									sourceLayer: sourceLayer.id,
@@ -130,7 +158,7 @@ function MapTile({
 							)
 						}
 						hoveredPolygonId = e.features[0].id
-						currentMap.setFeatureState(
+						mapRef.current.setFeatureState(
 							{
 								source: layerId,
 								sourceLayer: sourceLayer.id,
@@ -143,9 +171,9 @@ function MapTile({
 
 				// When the mouse leaves the layer, update the feature state of the
 				// previously hovered feature.
-				currentMap.on('mouseleave', layerId, () => {
+				mapRef.current.on('mouseleave', layerId, () => {
 					if (hoveredPolygonId !== null) {
-						currentMap.setFeatureState(
+						mapRef.current.setFeatureState(
 							{
 								source: layerId,
 								sourceLayer: sourceLayer.id,
@@ -162,12 +190,12 @@ function MapTile({
 		// This function will clean up (remove) layers added from previous runs of this effect
 		const removeLayers = () => {
 			layerIdsRef.current.forEach((layerId) => {
-				if (currentMap.getLayer(layerId)) {
-					currentMap.off('mousemove', layerId)
-					currentMap.off('mouseleave', layerId)
-					currentMap.removeLayer(layerId + '-outline')
-					currentMap.removeLayer(layerId)
-					currentMap.removeSource(layerId)
+				if (mapRef.current.getLayer(layerId)) {
+					mapRef.current.off('mousemove', layerId)
+					mapRef.current.off('mouseleave', layerId)
+					mapRef.current.removeLayer(layerId + '-outline')
+					mapRef.current.removeLayer(layerId)
+					mapRef.current.removeSource(layerId)
 				}
 			})
 
@@ -178,76 +206,24 @@ function MapTile({
 		removeLayers() // Remove existing layers first
 		handleLoad() // Add new layers afterwards
 
+		// set layers loaded state to true
+		setLayersLoaded(true)
+
 		// Cleanup function to run when component is unmounted or when dependencies change
 		return () => {
-			currentMap.off('load')
+			mapRef.current.off('load')
 			removeLayers() // Remove existing layers
 		}
-	}, [currentMap, sourceLayers, pickable])
+	}, [sourceLayers, setSourceLayers, pickable])
 
-	// Update the 'click' state of the polygon that was clicked to true for styling purposes
-	useEffect(() => {
-		// ensure the map object is initialized
-		if (
-			!currentMap ||
-			!currentMap.isStyleLoaded() ||
-			!sourceLayers ||
-			!pickable
-		)
-			return null
+	// React hook to manage change of map styling for the fill colour
+	FillColour({ configState, sourceLayers, map, layersLoaded })
 
-		// Reset the 'click' state of the previously clicked polygon
-		if (clickedPolygonIdRef.current !== null) {
-			sourceLayers.forEach((sourceLayer, index) => {
-				const layerId = `${sourceLayer.id}-${index}`
-				currentMap.setFeatureState(
-					{
-						source: layerId,
-						sourceLayer: sourceLayer.id,
-						id: clickedPolygonIdRef.current,
-					},
-					{ click: false }
-				)
-			})
-		}
+	// React hook to manage change of map styling for the click style
+	HandleClickStyle({ sourceLayers, map, click, configState })
 
-		if (!click.ID) return
-
-		sourceLayers?.forEach((sourceLayer, index) => {
-			const layerId = `${sourceLayer.id}-${index}`
-			const features = currentMap.querySourceFeatures(layerId, {
-				sourceLayer: [sourceLayer.id],
-			})
-			const matchingFeature = features.find(
-				(feature) => feature.properties.ID === click.ID
-			)
-
-			if (matchingFeature) {
-				clickedPolygonIdRef.current = matchingFeature.id
-				currentMap.setFeatureState(
-					{
-						source: layerId,
-						sourceLayer: sourceLayer.id,
-						id: clickedPolygonIdRef.current,
-					},
-					{ click: true }
-				)
-			}
-		})
-	}, [currentMap, click, sourceLayers, pickable])
-
-	useEffect(() => {
-		if (!configuration.fill_colour) return
-		sourceLayers?.forEach((sourceLayer, index) => {
-			const layerId = `${sourceLayer.id}-${index}`
-			currentMap.setPaintProperty(layerId, 'fill-color', styleFunction)
-			currentMap.setPaintProperty(
-				layerId,
-				'fill-outline-color',
-				styleFunction
-			)
-		})
-	}, configuration.fill_colour)
+	// React hook to manage change of map styling for the building layer
+	BuildingStyle({ sourceLayers, map })
 }
 
 export default MapTile

@@ -1,10 +1,12 @@
 # library(cc.map)
 library(shiny)
+devtools::load_all()
 
 # Fill data ---------------------------------------------------------------
 
 fill_colour <- qs::qread(system.file("data_colour.qs", package = "cc.map"))
-
+stories <- qs::qread(system.file("stories.qs", package = "cc.map"))
+stories <- tibble::as_tibble(stories)
 
 # UI / server -------------------------------------------------------------
 
@@ -14,15 +16,20 @@ map_js_UI <- function(id) {
     actionButton(shiny::NS(id, "button2"), "just change color"),
     actionButton(shiny::NS(id, "button3"), "add a selection"),
     actionButton(shiny::NS(id, "button4"), "change viewstate"),
+    actionButton(shiny::NS(id, "button5"), "remove choropleth"),
+    actionButton(shiny::NS(id, "button6"), "add heatmap"),
+    actionButton(shiny::NS(id, "button7"), "change heatmap filter"),
+    actionButton(shiny::NS(id, "button8"), "Remove heatmap layer"),
     cc.map::map_input(
       shiny::NS(id, "map"),
       username = "curbcut",
       token = 'pk.eyJ1IjoiY3VyYmN1dCIsImEiOiJjbGprYnVwOTQwaDAzM2xwaWdjbTB6bzdlIn0.Ks1cOI6v2i8jiIjk38s_kg',
+      style = "mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp",
       longitude = -73.5,
       latitude = 45.5,
       zoom = 9,
       tileset_prefix = "mtl",
-      stories = "mtl_stories")
+      stories = stories)
   )
 }
 
@@ -43,37 +50,60 @@ map_js_server <- function(id) {
 
     # Add a tileset to the map with fill colours
     observeEvent(input$button, {
-      update_map(session = session,
-                 map_ID = "map",
-                 configuration = list(tileset = "mtl_CMA_auto_zoom",
-                                      fill_colour = fill_colour))
+      map_choropleth(session = session, map_ID = "map",
+                     tileset = "mtl_CMA_auto_zoom",
+                     fill_colour = fill_colour)
     })
 
     # Just update fill colours
     observeEvent(input$button2, {
       fl_c <- fill_colour
-      fl_c$fill <- "#123456"
+      fl_c$fill <- sample(c("#C85A5A", "#E4ACAC", "#E8E8E8", "#B0D5DF", "#64ACBE"),
+                          nrow(fl_c), replace = TRUE)
 
-      update_map(session = session,
-                 map_ID = "map",
-                 configuration = list(fill_colour = fl_c))
+      map_choropleth_update_fill_colour(session = session, map_ID = "map",
+                                        fill_colour = fl_c)
     })
 
     # Select a random census tract ID (click on first button first to get a CT tileset)
     observeEvent(input$button3, {
-      update_map(session = session,
-                 map_ID = "map",
-                 configuration = list(select_id = sample(fill_colour$ID_color[120:500], 1)))
+      map_choropleth_update_selection(session = session, map_ID = "map",
+                                      select_id = "2466023_4")#sample(fill_colour$ID[120:500], 1))
     })
 
     # Update the viewstate
     observeEvent(input$button4, {
-      update_map(session = session,
-                 map_ID = "map",
-                 configuration = list(longitude = -73.5172,
-                                      latitude = 45.5613,
-                                      zoom = 15))
+      map_choropleth_viewstate(session = session,
+                               map_ID = "map",
+                               longitude = -73.5172,
+                               latitude = 45.5613,
+                               zoom = 15)
     })
+
+    # Remove the choropleth
+    observeEvent(input$button5, {
+      map_choropleth_remove(session = session,
+                            map_ID = "map")
+    })
+
+    # Add a heatmap layer
+    observeEvent(input$button6, {
+      map_heatmap(session = session,
+                  map_ID = "map",
+                  tileset = "mtl_crash_2021")
+    })
+    # Change filter
+    observeEvent(input$button7, {
+      map_heatmap_update_filter(session = session,
+                                map_ID = "map",
+                                filter = list("==", list("get", "ped"), TRUE))
+    })
+    # Remove heatmap
+    observeEvent(input$button8, {
+      map_heatmap_remove(session = session,
+                         map_ID = "map")
+    })
+
   })
 }
 
