@@ -40,9 +40,11 @@ function Map({ configuration, value, setValue }) {
 					acc[key] = parseConfiguration(value, newKeyPath)
 				} else {
 					if (typeof value === 'string') {
-						try {
-							value = JSON.parse(value)
-						} catch (e) {}
+						if (key !== 'select_id') {
+							try {
+								value = JSON.parse(value)
+							} catch (e) {}
+						}
 					}
 					acc[key] = value
 				}
@@ -89,10 +91,10 @@ function Map({ configuration, value, setValue }) {
 		mapID: [],
 	})
 
-	// Inform in console when value changes
-	useEffect(() => {
-		console.log(value)
-	}, [value])
+	// // Inform in console when value changes
+	// useEffect(() => {
+	// 	console.log(value)
+	// }, [value])
 
 	// Save the initial map center and zoom. We'll use these to create the map object
 	// only once, without warnings.
@@ -148,6 +150,7 @@ function Map({ configuration, value, setValue }) {
 		click,
 		username,
 		token,
+		setClick,
 	})
 
 	PointTile({ map, configState, username, token })

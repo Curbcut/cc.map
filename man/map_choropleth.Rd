@@ -4,7 +4,17 @@
 \alias{map_choropleth}
 \title{Update a map with a choropleth overlay}
 \usage{
-map_choropleth(session, map_ID, tileset, fill_colour, pickable = TRUE)
+map_choropleth(
+  session,
+  map_ID,
+  tileset,
+  fill_colour,
+  pickable = TRUE,
+  select_id = NA,
+  fill_fun = map_choropleth_fill_fun,
+  fill_fun_args = list(df = fill_colour, get_col = names(fill_colour)[1], fallback =
+    "transparent")
+)
 }
 \arguments{
 \item{session}{<\code{shiny::session}> The Shiny session object.}
@@ -13,11 +23,20 @@ map_choropleth(session, map_ID, tileset, fill_colour, pickable = TRUE)
 
 \item{tileset}{<\code{character}> The tileset to be used for the choropleth overlay.}
 
-\item{fill_colour}{<\code{data.frame}> A tibble with two columns: 'ID' and 'fill'. ID is
+\item{fill_colour}{<\code{data.frame}> A tibble with two columns: 'ID_color' and 'fill'. ID is
 the ID of the feature, and fill are hexes of 6 digits.}
 
 \item{pickable}{<\code{logical}> Should there be hovered effect, indicating the layer
 can be pickable? Defaults to TRUE.}
+
+\item{select_id}{<\code{character}> The selected ID that should be highlighted on
+the map. Defaults to none, NA.}
+
+\item{fill_fun}{<\code{function}> A function to generate the fill-color configuration.
+Defaults to \code{\link{map_choropleth_fill_fun}.}}
+
+\item{fill_fun_args}{<\code{list}> A list of arguments to pass to the fill_fun function.
+Defaults to a list with \code{df}, \code{get_col}, and \code{fallback}.}
 }
 \value{
 No return value. The function sends an update message to the Shiny

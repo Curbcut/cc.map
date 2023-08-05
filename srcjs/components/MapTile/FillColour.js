@@ -1,5 +1,4 @@
 import { useEffect, useRef, useMemo } from 'react'
-import { jsonToColorMap, createStyleFunction } from '../../mapUtils'
 
 function FillColour({ configState, sourceLayers, map, layersLoaded }) {
 	const mapRef = useRef()
@@ -8,19 +7,14 @@ function FillColour({ configState, sourceLayers, map, layersLoaded }) {
 	}, [map])
 
 	// Get the fill colour map
-	const colorMap = useMemo(
-		() =>
-			jsonToColorMap(
-				configState.choropleth
-					? configState.choropleth.fill_colour
-					: null
-			),
-		[configState.choropleth]
-	)
-	const styleFunction = useMemo(
-		() => createStyleFunction(colorMap),
-		[colorMap]
-	)
+	const styleFunction = useMemo(() => {
+		if (!configState.choropleth) return null
+		if (!configState.choropleth.fill_colour) return null
+
+		return configState.choropleth
+			? configState.choropleth.fill_colour
+			: null
+	}, [configState.choropleth])
 
 	// React hook to manage change of map styling for the fill colour
 	useEffect(() => {

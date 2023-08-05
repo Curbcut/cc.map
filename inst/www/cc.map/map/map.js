@@ -969,13 +969,18 @@ function MapTile(_ref) {
     configState = _ref.configState,
     click = _ref.click,
     username = _ref.username,
-    token = _ref.token;
+    token = _ref.token,
+    setClick = _ref.setClick;
   var layerIdsRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])([]);
   var mapRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])();
   var _useState = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false),
     _useState2 = _slicedToArray(_useState, 2),
     layersLoaded = _useState2[0],
     setLayersLoaded = _useState2[1];
+  var _useState3 = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(null),
+    _useState4 = _slicedToArray(_useState3, 2),
+    clickedPolygonId = _useState4[0],
+    setClickedPolygonId = _useState4[1];
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     mapRef.current = map.current;
   }, [map]);
@@ -989,15 +994,28 @@ function MapTile(_ref) {
     if (!configState.choropleth.pickable) return null;
     return configState.choropleth ? configState.choropleth.pickable : false;
   }, [configState.choropleth]);
+  var select_id = Object(react__WEBPACK_IMPORTED_MODULE_0__["useMemo"])(function () {
+    if (!configState.choropleth) return null;
+    if (!configState.choropleth.select_id) return null;
+    return configState.choropleth ? String(configState.choropleth.select_id) : null;
+  }, [configState.choropleth]);
+
+  // When the choropleth is initiated with a select_id, update click
+  Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
+    if (!select_id) return;
+    setClick({
+      ID: select_id
+    });
+  }, [select_id, setClick]);
 
   // Load the sourceLayers depending on configState.tileset
-  var _useState3 = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])({
+  var _useState5 = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])({
       vector_layers: [],
       url: ''
     }),
-    _useState4 = _slicedToArray(_useState3, 2),
-    sourceLayers = _useState4[0],
-    setSourceLayers = _useState4[1];
+    _useState6 = _slicedToArray(_useState5, 2),
+    sourceLayers = _useState6[0],
+    setSourceLayers = _useState6[1];
   // Get the source layers in the active tileset
   Object(_LayerJson__WEBPACK_IMPORTED_MODULE_4__["default"])({
     setSourceLayers: setSourceLayers,
@@ -1083,6 +1101,35 @@ function MapTile(_ref) {
           }
         });
 
+        // If it there is a select_id at init, set the feature state to `click: true`
+        if (select_id) {
+          var checkFeatures = function checkFeatures(attemptsRemaining) {
+            mapRef.current.once('idle', function () {
+              var features = mapRef.current.querySourceFeatures(layerId, {
+                sourceLayer: [sourceLayer.id]
+              });
+              var matchingFeature = features.find(function (feature) {
+                return feature.properties.ID === select_id;
+              });
+              if (matchingFeature) {
+                mapRef.current.setFeatureState({
+                  source: layerId,
+                  sourceLayer: sourceLayer.id,
+                  id: matchingFeature.id
+                }, {
+                  click: true
+                });
+                setClickedPolygonId(matchingFeature.id);
+              } else if (!matchingFeature && attemptsRemaining > 0) {
+                setTimeout(function () {
+                  return checkFeatures(attemptsRemaining - 1);
+                }, 250);
+              }
+            });
+          };
+          checkFeatures(5);
+        }
+
         // Add the layer id to our array of added layers
         layerIdsRef.current = layerIds;
 
@@ -1156,7 +1203,7 @@ function MapTile(_ref) {
       mapRef.current.off('load');
       removeLayers(); // Remove existing layers
     };
-  }, [sourceLayers, setSourceLayers, pickable]);
+  }, [sourceLayers, setSourceLayers, pickable, select_id]);
 
   // React hook to manage change of map styling for the fill colour
   Object(_MapTile_FillColour__WEBPACK_IMPORTED_MODULE_3__["default"])({
@@ -1171,7 +1218,9 @@ function MapTile(_ref) {
     sourceLayers: sourceLayers,
     map: map,
     click: click,
-    configState: configState
+    configState: configState,
+    clickedPolygonId: clickedPolygonId,
+    setClickedPolygonId: setClickedPolygonId
   });
 
   // React hook to manage change of map styling for the building layer
@@ -1269,8 +1318,6 @@ function BuildingStyle(_ref) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _mapUtils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../mapUtils */ "./srcjs/mapUtils.js");
-
 
 function FillColour(_ref) {
   var configState = _ref.configState,
@@ -1283,12 +1330,11 @@ function FillColour(_ref) {
   }, [map]);
 
   // Get the fill colour map
-  var colorMap = Object(react__WEBPACK_IMPORTED_MODULE_0__["useMemo"])(function () {
-    return Object(_mapUtils__WEBPACK_IMPORTED_MODULE_1__["jsonToColorMap"])(configState.choropleth ? configState.choropleth.fill_colour : null);
-  }, [configState.choropleth]);
   var styleFunction = Object(react__WEBPACK_IMPORTED_MODULE_0__["useMemo"])(function () {
-    return Object(_mapUtils__WEBPACK_IMPORTED_MODULE_1__["createStyleFunction"])(colorMap);
-  }, [colorMap]);
+    if (!configState.choropleth) return null;
+    if (!configState.choropleth.fill_colour) return null;
+    return configState.choropleth ? configState.choropleth.fill_colour : null;
+  }, [configState.choropleth]);
 
   // React hook to manage change of map styling for the fill colour
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
@@ -1324,15 +1370,14 @@ function HandleClickStyle(_ref) {
   var sourceLayers = _ref.sourceLayers,
     map = _ref.map,
     click = _ref.click,
-    configState = _ref.configState;
+    configState = _ref.configState,
+    clickedPolygonId = _ref.clickedPolygonId,
+    setClickedPolygonId = _ref.setClickedPolygonId;
   // mapRef for reference to the map object
   var mapRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])();
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     mapRef.current = map.current;
   }, [map]);
-
-  // clickedPolygonIdRef for reference to the ID of the polygon that was clicked
-  var clickedPolygonIdRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])(null);
 
   // React hook to manage click style
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
@@ -1341,13 +1386,13 @@ function HandleClickStyle(_ref) {
     if (!mapRef.current || !mapRef.current.isStyleLoaded() || !configState.choropleth || sourceLayers.vector_layers.length === 0 || !configState.choropleth.pickable) return null;
 
     // Reset the 'click' state of the previously clicked polygon
-    if (clickedPolygonIdRef.current !== null) {
+    if (clickedPolygonId !== null) {
       sourceLayers.vector_layers.forEach(function (sourceLayer, index) {
         var layerId = "".concat(sourceLayer.id, "-").concat(index);
         mapRef.current.setFeatureState({
           source: layerId,
           sourceLayer: sourceLayer.id,
-          id: clickedPolygonIdRef.current
+          id: clickedPolygonId
         }, {
           click: false
         });
@@ -1363,11 +1408,11 @@ function HandleClickStyle(_ref) {
         return feature.properties.ID === click.ID;
       });
       if (matchingFeature) {
-        clickedPolygonIdRef.current = matchingFeature.id;
+        setClickedPolygonId(matchingFeature.id);
         mapRef.current.setFeatureState({
           source: layerId,
           sourceLayer: sourceLayer.id,
-          id: clickedPolygonIdRef.current
+          id: matchingFeature.id
         }, {
           click: true
         });
@@ -1975,9 +2020,11 @@ function Map(_ref) {
           acc[key] = parseConfiguration(value, newKeyPath);
         } else {
           if (typeof value === 'string') {
-            try {
-              value = JSON.parse(value);
-            } catch (e) {}
+            if (key !== 'select_id') {
+              try {
+                value = JSON.parse(value);
+              } catch (e) {}
+            }
           }
           acc[key] = value;
         }
@@ -2019,10 +2066,10 @@ function Map(_ref) {
     click = _useState4[0],
     setClick = _useState4[1];
 
-  // Inform in console when value changes
-  Object(react__WEBPACK_IMPORTED_MODULE_2__["useEffect"])(function () {
-    console.log(value);
-  }, [value]);
+  // // Inform in console when value changes
+  // useEffect(() => {
+  // 	console.log(value)
+  // }, [value])
 
   // Save the initial map center and zoom. We'll use these to create the map object
   // only once, without warnings.
@@ -2069,7 +2116,8 @@ function Map(_ref) {
     configState: configState,
     click: click,
     username: username,
-    token: token
+    token: token,
+    setClick: setClick
   });
   Object(_components_PointTile__WEBPACK_IMPORTED_MODULE_8__["default"])({
     map: map,
@@ -2109,86 +2157,6 @@ function Map(_ref) {
   });
 }
 Object(reactR__WEBPACK_IMPORTED_MODULE_0__["reactShinyInput"])('.map', 'cc.map.map', Map);
-
-/***/ }),
-
-/***/ "./srcjs/mapUtils.js":
-/*!***************************!*\
-  !*** ./srcjs/mapUtils.js ***!
-  \***************************/
-/*! exports provided: jsonToColorMap, createStyleFunction, createModifiedStyleFunction */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "jsonToColorMap", function() { return jsonToColorMap; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createStyleFunction", function() { return createStyleFunction; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createModifiedStyleFunction", function() { return createModifiedStyleFunction; });
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _iterableToArrayLimit(arr, i) { var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"]; if (null != _i) { var _s, _e, _x, _r, _arr = [], _n = !0, _d = !1; try { if (_x = (_i = _i.call(arr)).next, 0 === i) { if (Object(_i) !== _i) return; _n = !1; } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0); } catch (err) { _d = !0, _e = err; } finally { try { if (!_n && null != _i["return"] && (_r = _i["return"](), Object(_r) !== _r)) return; } finally { if (_d) throw _e; } } return _arr; } }
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
-var jsonToColorMap = function jsonToColorMap(json) {
-  // Return null if json is undefined
-  if (!json) return null;
-  if (json === undefined) return null;
-  var colorMap = {};
-
-  // Ensure json is an array
-  json = Array.isArray(json) ? json : [json];
-
-  // Create color map
-  json.forEach(function (_ref) {
-    var ID_color = _ref.ID_color,
-      fill = _ref.fill;
-    return colorMap[ID_color] = fill;
-  });
-  return colorMap;
-};
-var createStyleFunction = function createStyleFunction(colorMap) {
-  if (!colorMap) return null;
-  var defaultColor = 'transparent'; // fallback color
-
-  // If there is no colorMap, then return the default color
-  if (!colorMap) return defaultColor;
-  var styleFunction = ['match', ['get', 'ID_color']].concat(_toConsumableArray(Object.entries(colorMap).reduce(function (acc, _ref2) {
-    var _ref3 = _slicedToArray(_ref2, 2),
-      key = _ref3[0],
-      value = _ref3[1];
-    return acc.concat(key, value);
-  }, [])), [defaultColor]);
-  return styleFunction;
-};
-var createModifiedStyleFunction = function createModifiedStyleFunction(colorMap, clickID, selectionColor) {
-  // Copy colorMap to not mutate the original
-  var newColorMap = _objectSpread({}, colorMap);
-
-  // Remove the color associated with clickID
-  delete newColorMap[clickID];
-
-  // Use selectionColor for clickID
-  newColorMap[clickID] = selectionColor;
-  var defaultColor = 'transparent'; // fallback color
-  var styleFunction = ['match', ['get', 'ID_color']].concat(_toConsumableArray(Object.entries(newColorMap).reduce(function (acc, _ref4) {
-    var _ref5 = _slicedToArray(_ref4, 2),
-      key = _ref5[0],
-      value = _ref5[1];
-    return acc.concat(key, value);
-  }, [])), [defaultColor]);
-  return styleFunction;
-};
 
 /***/ }),
 

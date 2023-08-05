@@ -13,7 +13,6 @@ function LayerJson({ setSourceLayers, username, tileset, token }) {
 			.then((response) => response.json())
 			.then((srcLayers) => {
 				const url = `mapbox://${username}.${tileset}`
-
 				setSourceLayers({
 					vector_layers: srcLayers?.vector_layers,
 					url: url,

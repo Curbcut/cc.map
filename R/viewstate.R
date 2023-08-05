@@ -15,7 +15,7 @@
 #' server to update the map.
 #'
 #' @export
-map_choropleth_viewstate <- function(session, map_ID,longitude, latitude, zoom) {
+map_viewstate <- function(session, map_ID, longitude, latitude, zoom) {
 
   # Create an empty configuration list
   configuration <- list()

@@ -7,33 +7,46 @@
 #' @param session <`shiny::session`> The Shiny session object.
 #' @param map_ID <`character`> A unique identifier for the map input.
 #' @param tileset <`character`> The tileset to be used for the choropleth overlay.
-#' @param fill_colour <`data.frame`> A tibble with two columns: 'ID' and 'fill'. ID is
+#' @param fill_colour <`data.frame`> A tibble with two columns: 'ID_color' and 'fill'. ID is
 #' the ID of the feature, and fill are hexes of 6 digits.
 #' @param pickable <`logical`> Should there be hovered effect, indicating the layer
 #' can be pickable? Defaults to TRUE.
+#' @param select_id <`character`> The selected ID that should be highlighted on
+#' the map. Defaults to none, NA.
+#' @param fill_fun <`function`> A function to generate the fill-color configuration.
+#' Defaults to \code{\link{map_choropleth_fill_fun}.}
+#' @param fill_fun_args <`list`> A list of arguments to pass to the fill_fun function.
+#' Defaults to a list with \code{df}, \code{get_col}, and \code{fallback}.
 #'
 #' @return No return value. The function sends an update message to the Shiny
 #' server to update the map.
 #'
 #' @export
-map_choropleth <- function(session, map_ID, tileset, fill_colour, pickable = TRUE) {
+map_choropleth <- function(session, map_ID, tileset, fill_colour, pickable = TRUE,
+                           select_id = NA, fill_fun = map_choropleth_fill_fun,
+                           fill_fun_args = list(df = fill_colour,
+                                                get_col = names(fill_colour)[1],
+                                                fallback = "transparent")) {
 
   # Create an empty configuration list
   configuration <- list()
   configuration$choropleth <- list()
 
   # Add the fill colour to the configuration list and transfer it to JSON
-  configuration$choropleth$fill_colour <- {
-    out <- fill_colour
-    names(out)[names(out) == "ID"] <- "ID_color"
-    jsonlite::toJSON(out)
-  }
+  configuration$choropleth$fill_colour <- do.call(fill_fun, fill_fun_args)
 
   # Add the tileset to the configuration list
   configuration$choropleth$tileset <- tileset
 
   # Add the pickable to the configuration list
   configuration$choropleth$pickable <- pickable
+
+  # Add a selection if it's not NA
+  if (!is.null(select_id)) {
+    if (!is.na(select_id)) {
+      configuration$choropleth$select_id <- select_id
+    }
+  }
 
   # Send the configuration list to the server
   update_map(session = session, map_ID = map_ID, configuration = configuration)
@@ -49,23 +62,27 @@ map_choropleth <- function(session, map_ID, tileset, fill_colour, pickable = TRU
 #' @param map_ID <`character`> A unique identifier for the map input.
 #' @param fill_colour <`data.frame`> A tibble with two columns: 'ID' and 'fill'. ID is
 #' the ID of the feature, and fill are hexes of 6 digits.
+#' @param fill_fun <`function`> A function to generate the fill-color configuration.
+#' Defaults to \code{\link{map_choropleth_fill_fun}.}
+#' @param fill_fun_args <`list`> A list of arguments to pass to the fill_fun function.
+#' Defaults to a list with \code{df}, \code{get_col}, and \code{fallback}.
 #'
 #' @return No return value. The function sends an update message to the Shiny
 #' server to update the map.
 #'
 #' @export
-map_choropleth_update_fill_colour <-function(session, map_ID, fill_colour) {
+map_choropleth_update_fill_colour <-function(session, map_ID, fill_colour,
+                                             fill_fun = map_choropleth_fill_fun,
+                                             fill_fun_args = list(df = fill_colour,
+                                                                  get_col = names(fill_colour)[1],
+                                                                  fallback = "transparent")) {
 
   # Create an empty configuration list
   configuration <- list()
   configuration$choropleth <- list()
 
   # Add the fill colour to the configuration list and transfer it to JSON
-  configuration$choropleth$fill_colour <- {
-    out <- fill_colour
-    names(out)[names(out) == "ID"] <- "ID_color"
-    jsonlite::toJSON(out)
-  }
+  configuration$choropleth$fill_colour <- do.call(fill_fun, fill_fun_args)
 
   # Send the configuration list to the server
   update_map(session = session, map_ID = map_ID, configuration = configuration)
@@ -129,3 +146,42 @@ map_choropleth_remove <- function(session, map_ID) {
   # Send the configuration list to the server
   update_map(session = session, map_ID = map_ID, configuration = configuration)
 }
+
+#' Create a JSON object for fill-color in Mapbox choropleth
+#'
+#' This function takes a data frame and generates a JSON object that represents
+#' the fill-color mapping paint property for a Mapbox choropleth map. It matches
+#' the values from the specified column with their corresponding colors and includes
+#' a fallback color. This function will use the match decision syntax, as is
+#' documented here: https://docs.mapbox.com/mapbox-gl-js/style-spec/expressions/#match
+#'
+#' @param df <`data.frame`> Data frame of two columns. The first is the value that
+#' match the tile (e.g. field `ID_colour`, which every normal choropleth tile should have),
+#' and the second column is hexes (the fill colour).
+#' @param get_col <`character`> Name of the feature value to match the fill color
+#' to the tileset. Defaults to the name of the first column of `df`, which more
+#' often than not, should be `ID_colour` (value shared by all the normal choropleth
+#' tileset, included at import.).
+#' @param fallback <`character`> Fallback color if no match is found (default is
+#' "transparent")
+#'
+#' @return A JSON object representing the fill-color mapping
+#' @export
+map_choropleth_fill_fun <- function(df, get_col = names(df)[1],
+                                    fallback = "transparent") {
+
+  # Convert each row to character
+  row_as_chr <- as.character(apply(df, 1, as.character))
+
+  # Add the fallback color
+  row_as_chr <- c(row_as_chr, fallback)
+
+  # Create a Mapbox fill-color object using "match" and "get"
+  mapbox_fill_clr <- c("match", "x", lapply(row_as_chr, c))
+  mapbox_fill_clr[[2]] <- list("get", get_col)
+
+  # Convert the fill-color object to JSON
+  return(jsonlite::toJSON(mapbox_fill_clr, auto_unbox = T))
+
+}
+

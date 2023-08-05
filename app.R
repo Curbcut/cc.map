@@ -5,6 +5,7 @@ devtools::load_all()
 # Fill data ---------------------------------------------------------------
 
 fill_colour <- qs::qread(system.file("data_colour.qs", package = "cc.map"))
+names(fill_colour)[1] <- "ID_color"
 stories <- qs::qread(system.file("stories.qs", package = "cc.map"))
 stories <- tibble::as_tibble(stories)
 
@@ -13,6 +14,7 @@ stories <- tibble::as_tibble(stories)
 map_js_UI <- function(id) {
   shiny::tagList(
     actionButton(shiny::NS(id, "button"), "new tileset + color"),
+    actionButton(shiny::NS(id, "button1"), "new tileset + color + selection"),
     actionButton(shiny::NS(id, "button2"), "just change color"),
     actionButton(shiny::NS(id, "button3"), "add a selection"),
     actionButton(shiny::NS(id, "button4"), "change viewstate"),
@@ -24,7 +26,7 @@ map_js_UI <- function(id) {
       shiny::NS(id, "map"),
       username = "curbcut",
       token = 'pk.eyJ1IjoiY3VyYmN1dCIsImEiOiJjbGprYnVwOTQwaDAzM2xwaWdjbTB6bzdlIn0.Ks1cOI6v2i8jiIjk38s_kg',
-      style = "mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp",
+      map_style_id = "mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp",
       longitude = -73.5,
       latitude = 45.5,
       zoom = 9,
@@ -54,6 +56,13 @@ map_js_server <- function(id) {
                      tileset = "mtl_CMA_auto_zoom",
                      fill_colour = fill_colour)
     })
+    # Add a tileset to the map with fill colours
+    observeEvent(input$button1, {
+      map_choropleth(session = session, map_ID = "map",
+                     tileset = "mtl_CMA_auto_zoom",
+                     fill_colour = fill_colour,
+                     select_id = "2466023_4")
+    })
 
     # Just update fill colours
     observeEvent(input$button2, {
@@ -73,11 +82,11 @@ map_js_server <- function(id) {
 
     # Update the viewstate
     observeEvent(input$button4, {
-      map_choropleth_viewstate(session = session,
-                               map_ID = "map",
-                               longitude = -73.5172,
-                               latitude = 45.5613,
-                               zoom = 15)
+      map_viewstate(session = session,
+                    map_ID = "map",
+                    longitude = -73.5172,
+                    latitude = 45.5613,
+                    zoom = 15)
     })
 
     # Remove the choropleth

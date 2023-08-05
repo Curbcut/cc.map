@@ -4,7 +4,14 @@
 \alias{map_choropleth_update_fill_colour}
 \title{Update a map's choropleth overlay fill colour}
 \usage{
-map_choropleth_update_fill_colour(session, map_ID, fill_colour)
+map_choropleth_update_fill_colour(
+  session,
+  map_ID,
+  fill_colour,
+  fill_fun = map_choropleth_fill_fun,
+  fill_fun_args = list(df = fill_colour, get_col = names(fill_colour)[1], fallback =
+    "transparent")
+)
 }
 \arguments{
 \item{session}{<\code{shiny::session}> The Shiny session object.}
@@ -13,6 +20,12 @@ map_choropleth_update_fill_colour(session, map_ID, fill_colour)
 
 \item{fill_colour}{<\code{data.frame}> A tibble with two columns: 'ID' and 'fill'. ID is
 the ID of the feature, and fill are hexes of 6 digits.}
+
+\item{fill_fun}{<\code{function}> A function to generate the fill-color configuration.
+Defaults to \code{\link{map_choropleth_fill_fun}.}}
+
+\item{fill_fun_args}{<\code{list}> A list of arguments to pass to the fill_fun function.
+Defaults to a list with \code{df}, \code{get_col}, and \code{fallback}.}
 }
 \value{
 No return value. The function sends an update message to the Shiny

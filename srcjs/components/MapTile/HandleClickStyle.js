@@ -1,15 +1,19 @@
 // Update the 'click' state of the polygon that was clicked to true for styling purposes
 import { useEffect, useRef } from 'react'
 
-function HandleClickStyle({ sourceLayers, map, click, configState }) {
+function HandleClickStyle({
+	sourceLayers,
+	map,
+	click,
+	configState,
+	clickedPolygonId,
+	setClickedPolygonId,
+}) {
 	// mapRef for reference to the map object
 	const mapRef = useRef()
 	useEffect(() => {
 		mapRef.current = map.current
 	}, [map])
-
-	// clickedPolygonIdRef for reference to the ID of the polygon that was clicked
-	const clickedPolygonIdRef = useRef(null)
 
 	// React hook to manage click style
 	useEffect(() => {
@@ -24,14 +28,14 @@ function HandleClickStyle({ sourceLayers, map, click, configState }) {
 			return null
 
 		// Reset the 'click' state of the previously clicked polygon
-		if (clickedPolygonIdRef.current !== null) {
+		if (clickedPolygonId !== null) {
 			sourceLayers.vector_layers.forEach((sourceLayer, index) => {
 				const layerId = `${sourceLayer.id}-${index}`
 				mapRef.current.setFeatureState(
 					{
 						source: layerId,
 						sourceLayer: sourceLayer.id,
-						id: clickedPolygonIdRef.current,
+						id: clickedPolygonId,
 					},
 					{ click: false }
 				)
@@ -50,12 +54,12 @@ function HandleClickStyle({ sourceLayers, map, click, configState }) {
 			)
 
 			if (matchingFeature) {
-				clickedPolygonIdRef.current = matchingFeature.id
+				setClickedPolygonId(matchingFeature.id)
 				mapRef.current.setFeatureState(
 					{
 						source: layerId,
 						sourceLayer: sourceLayer.id,
-						id: clickedPolygonIdRef.current,
+						id: matchingFeature.id,
 					},
 					{ click: true }
 				)

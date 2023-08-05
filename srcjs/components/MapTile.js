@@ -4,10 +4,11 @@ import HandleClickStyle from './MapTile/HandleClickStyle'
 import FillColour from './MapTile/FillColour'
 import LayerJson from './LayerJson'
 
-function MapTile({ map, configState, click, username, token }) {
+function MapTile({ map, configState, click, username, token, setClick }) {
 	const layerIdsRef = useRef([])
 	const mapRef = useRef()
 	const [layersLoaded, setLayersLoaded] = useState(false)
+	const [clickedPolygonId, setClickedPolygonId] = useState(null)
 
 	useEffect(() => {
 		mapRef.current = map.current
@@ -25,6 +26,23 @@ function MapTile({ map, configState, click, username, token }) {
 
 		return configState.choropleth ? configState.choropleth.pickable : false
 	}, [configState.choropleth])
+	const select_id = useMemo(() => {
+		if (!configState.choropleth) return null
+		if (!configState.choropleth.select_id) return null
+
+		return configState.choropleth
+			? String(configState.choropleth.select_id)
+			: null
+	}, [configState.choropleth])
+
+	// When the choropleth is initiated with a select_id, update click
+	useEffect(() => {
+		if (!select_id) return
+
+		setClick({
+			ID: select_id,
+		})
+	}, [select_id, setClick])
 
 	// Load the sourceLayers depending on configState.tileset
 	const [sourceLayers, setSourceLayers] = useState({
@@ -137,6 +155,45 @@ function MapTile({ map, configState, click, username, token }) {
 					},
 				})
 
+				// If it there is a select_id at init, set the feature state to `click: true`
+				if (select_id) {
+					const checkFeatures = (attemptsRemaining) => {
+						mapRef.current.once('idle', () => {
+							const features = mapRef.current.querySourceFeatures(
+								layerId,
+								{
+									sourceLayer: [sourceLayer.id],
+								}
+							)
+							const matchingFeature = features.find(
+								(feature) => feature.properties.ID === select_id
+							)
+
+							if (matchingFeature) {
+								mapRef.current.setFeatureState(
+									{
+										source: layerId,
+										sourceLayer: sourceLayer.id,
+										id: matchingFeature.id,
+									},
+									{ click: true }
+								)
+								setClickedPolygonId(matchingFeature.id)
+							} else if (
+								!matchingFeature &&
+								attemptsRemaining > 0
+							) {
+								setTimeout(
+									() => checkFeatures(attemptsRemaining - 1),
+									250
+								)
+							}
+						})
+					}
+
+					checkFeatures(5)
+				}
+
 				// Add the layer id to our array of added layers
 				layerIdsRef.current = layerIds
 
@@ -214,13 +271,20 @@ function MapTile({ map, configState, click, username, token }) {
 			mapRef.current.off('load')
 			removeLayers() // Remove existing layers
 		}
-	}, [sourceLayers, setSourceLayers, pickable])
+	}, [sourceLayers, setSourceLayers, pickable, select_id])
 
 	// React hook to manage change of map styling for the fill colour
 	FillColour({ configState, sourceLayers, map, layersLoaded })
 
 	// React hook to manage change of map styling for the click style
-	HandleClickStyle({ sourceLayers, map, click, configState })
+	HandleClickStyle({
+		sourceLayers,
+		map,
+		click,
+		configState,
+		clickedPolygonId,
+		setClickedPolygonId,
+	})
 
 	// React hook to manage change of map styling for the building layer
 	BuildingStyle({ sourceLayers, map })
