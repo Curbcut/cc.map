@@ -14,7 +14,8 @@
 #' @param select_id <`character`> The selected ID that should be highlighted on
 #' the map. Defaults to none, NA.
 #' @param fill_fun <`function`> A function to generate the fill-color configuration.
-#' Defaults to \code{\link{map_choropleth_fill_fun}.}
+#' Defaults to \code{\link{map_choropleth_fill_fun}}. It needs to return the JSON
+#' that will be fed to `fill-color` paint argument of the mapbox choropleth.
 #' @param fill_fun_args <`list`> A list of arguments to pass to the fill_fun function.
 #' Defaults to a list with \code{df}, \code{get_col}, and \code{fallback}.
 #'
@@ -63,7 +64,8 @@ map_choropleth <- function(session, map_ID, tileset, fill_colour, pickable = TRU
 #' @param fill_colour <`data.frame`> A tibble with two columns: 'ID' and 'fill'. ID is
 #' the ID of the feature, and fill are hexes of 6 digits.
 #' @param fill_fun <`function`> A function to generate the fill-color configuration.
-#' Defaults to \code{\link{map_choropleth_fill_fun}.}
+#' Defaults to \code{\link{map_choropleth_fill_fun}}. It needs to return the JSON
+#' that will be fed to `fill-color` paint argument of the mapbox choropleth.
 #' @param fill_fun_args <`list`> A list of arguments to pass to the fill_fun function.
 #' Defaults to a list with \code{df}, \code{get_col}, and \code{fallback}.
 #'

@@ -33,7 +33,8 @@ can be pickable? Defaults to TRUE.}
 the map. Defaults to none, NA.}
 
 \item{fill_fun}{<\code{function}> A function to generate the fill-color configuration.
-Defaults to \code{\link{map_choropleth_fill_fun}.}}
+Defaults to \code{\link{map_choropleth_fill_fun}}. It needs to return the JSON
+that will be fed to \code{fill-color} paint argument of the mapbox choropleth.}
 
 \item{fill_fun_args}{<\code{list}> A list of arguments to pass to the fill_fun function.
 Defaults to a list with \code{df}, \code{get_col}, and \code{fallback}.}

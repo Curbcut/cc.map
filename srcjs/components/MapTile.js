@@ -3,11 +3,10 @@ import BuildingStyle from './MapTile/BuildingStyle'
 import HandleClickStyle from './MapTile/HandleClickStyle'
 import FillColour from './MapTile/FillColour'
 import LayerJson from './LayerJson'
+import SelectId from './MapTile/SelectId'
 
 function MapTile({ map, configState, click, username, token, setClick }) {
-	const layerIdsRef = useRef([])
 	const mapRef = useRef()
-	const [layersLoaded, setLayersLoaded] = useState(false)
 	const [clickedPolygonId, setClickedPolygonId] = useState(null)
 
 	useEffect(() => {
@@ -57,47 +56,29 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 		token,
 	})
 
+	// Keep current loaded layer IDs
+	const [layerIds, setLayerIds] = useState({ layerIds: [], allLoaded: false })
+
 	useEffect(() => {
 		// ensure the map object is initialized
-		if (!mapRef.current) return null
-		if (sourceLayers.vector_layers === []) return null
-		if (sourceLayers.vector_layers.length === 0) return null
-
-		// Check if map style is loaded (timeout due to race condition with Stories component)
-		if (!mapRef.current.isStyleLoaded()) {
-			// If not loaded, wait for 250ms and then re-trigger the function
-			const timeoutId = setTimeout(() => {
-				setSourceLayers((oldSourceLayers) => {
-					// Check if oldSourceLayers is iterable
-					if (
-						oldSourceLayers &&
-						typeof oldSourceLayers[Symbol.iterator] === 'function'
-					) {
-						return [...oldSourceLayers]
-					} else {
-						// If it's not iterable, return a default value (like an empty array)
-						return sourceLayers
-					}
-				})
-			}, 250)
-
-			// Return cleanup function to clear the timeout
-			return () => clearTimeout(timeoutId)
-		}
-
-		const layers = mapRef.current.getStyle().layers
-		const buildingLayerId = layers.find(
-			(layer) => layer.type === 'fill' && layer.id.includes('building')
-		).id
+		if (!sourceLayers.vector_layers?.length) return
 
 		const handleLoad = () => {
-			// Keep track of added layers
-			const layerIds = []
+			const layers = mapRef.current.getStyle().layers
+			// As the building layer is sometimes invisible, the pitch outline layer is the
+			// next one closer to use to put our choropleth layers under.
+			const buildingLayerId = layers.find(
+				(layer) =>
+					layer.type === 'line' && layer.id.includes('pitch-outline')
+			).id
 
 			// Add the source layers to the map
-			sourceLayers.vector_layers?.forEach((sourceLayer, index) => {
-				const layerId = `${sourceLayer.id}-${index}`
-				layerIds.push(layerId) // add the layer id to our array of added layers
+			sourceLayers.vector_layers?.forEach((sourceLayer) => {
+				const layerId = sourceLayer.id
+				setLayerIds((prevLayerIds) => ({
+					layerIds: [...prevLayerIds.layerIds, layerId],
+					allLoaded: false,
+				}))
 				let hoveredPolygonId = null
 				mapRef.current.addSource(layerId, {
 					type: 'vector',
@@ -110,7 +91,7 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 						id: layerId,
 						type: 'fill',
 						source: layerId,
-						'source-layer': sourceLayer.id,
+						'source-layer': layerId,
 						minzoom: sourceLayer.minzoom,
 						maxzoom: sourceLayer.maxzoom,
 						layout: {},
@@ -133,7 +114,7 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 					id: layerId + '-outline',
 					type: 'line',
 					source: layerId,
-					'source-layer': sourceLayer.id,
+					'source-layer': layerId,
 					minzoom: sourceLayer.minzoom,
 					maxzoom: sourceLayer.maxzoom,
 					layout: {},
@@ -155,48 +136,6 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 					},
 				})
 
-				// If it there is a select_id at init, set the feature state to `click: true`
-				if (select_id) {
-					const checkFeatures = (attemptsRemaining) => {
-						mapRef.current.once('idle', () => {
-							const features = mapRef.current.querySourceFeatures(
-								layerId,
-								{
-									sourceLayer: [sourceLayer.id],
-								}
-							)
-							const matchingFeature = features.find(
-								(feature) => feature.properties.ID === select_id
-							)
-
-							if (matchingFeature) {
-								mapRef.current.setFeatureState(
-									{
-										source: layerId,
-										sourceLayer: sourceLayer.id,
-										id: matchingFeature.id,
-									},
-									{ click: true }
-								)
-								setClickedPolygonId(matchingFeature.id)
-							} else if (
-								!matchingFeature &&
-								attemptsRemaining > 0
-							) {
-								setTimeout(
-									() => checkFeatures(attemptsRemaining - 1),
-									250
-								)
-							}
-						})
-					}
-
-					checkFeatures(5)
-				}
-
-				// Add the layer id to our array of added layers
-				layerIdsRef.current = layerIds
-
 				// If the layer is not pickable, then we don't want to add the hover effect
 				if (!pickable) return
 
@@ -208,7 +147,7 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 							mapRef.current.setFeatureState(
 								{
 									source: layerId,
-									sourceLayer: sourceLayer.id,
+									sourceLayer: layerId,
 									id: hoveredPolygonId,
 								},
 								{ hover: false }
@@ -218,7 +157,7 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 						mapRef.current.setFeatureState(
 							{
 								source: layerId,
-								sourceLayer: sourceLayer.id,
+								sourceLayer: layerId,
 								id: hoveredPolygonId,
 							},
 							{ hover: true }
@@ -233,7 +172,7 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 						mapRef.current.setFeatureState(
 							{
 								source: layerId,
-								sourceLayer: sourceLayer.id,
+								sourceLayer: layerId,
 								id: hoveredPolygonId,
 							},
 							{ hover: false }
@@ -241,12 +180,21 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 					}
 					hoveredPolygonId = null
 				})
+
+				// Add final to the layers added
+				setLayerIds((prevState) => ({
+					...prevState,
+					layerIds: [...prevState.layerIds, layerId], // add the layer id
+					allLoaded: true,
+				}))
 			})
 		}
 
 		// This function will clean up (remove) layers added from previous runs of this effect
 		const removeLayers = () => {
-			layerIdsRef.current.forEach((layerId) => {
+			const currentLayerIds = [...layerIds.layerIds] // Make a shallow copy
+
+			currentLayerIds.forEach((layerId) => {
 				if (mapRef.current.getLayer(layerId)) {
 					mapRef.current.off('mousemove', layerId)
 					mapRef.current.off('mouseleave', layerId)
@@ -257,28 +205,34 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 			})
 
 			// Clear the ref after removing layers
-			layerIdsRef.current = []
+			setLayerIds({ layerIds: [], allLoaded: false })
 		}
 
 		removeLayers() // Remove existing layers first
-		handleLoad() // Add new layers afterwards
 
-		// set layers loaded state to true
-		setLayersLoaded(true)
+		// Add new layers afterwards
+		if (mapRef.current.isStyleLoaded()) {
+			handleLoad()
+		} else {
+			mapRef.current.on('load', handleLoad)
+		}
 
-		// Cleanup function to run when component is unmounted or when dependencies change
+		// // Cleanup function to run when component is unmounted or when dependencies change
 		return () => {
 			mapRef.current.off('load')
 			removeLayers() // Remove existing layers
 		}
-	}, [sourceLayers, setSourceLayers, pickable, select_id])
+	}, [sourceLayers, pickable, select_id])
+
+	// Deal with polygons selected at init
+	SelectId({ map, select_id, layerIds, setClickedPolygonId })
 
 	// React hook to manage change of map styling for the fill colour
-	FillColour({ configState, sourceLayers, map, layersLoaded })
+	FillColour({ configState, map, layerIds })
 
 	// React hook to manage change of map styling for the click style
 	HandleClickStyle({
-		sourceLayers,
+		layerIds,
 		map,
 		click,
 		configState,

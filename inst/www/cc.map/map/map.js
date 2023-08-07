@@ -949,6 +949,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _MapTile_HandleClickStyle__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./MapTile/HandleClickStyle */ "./srcjs/components/MapTile/HandleClickStyle.js");
 /* harmony import */ var _MapTile_FillColour__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./MapTile/FillColour */ "./srcjs/components/MapTile/FillColour.js");
 /* harmony import */ var _LayerJson__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./LayerJson */ "./srcjs/components/LayerJson.js");
+/* harmony import */ var _MapTile_SelectId__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./MapTile/SelectId */ "./srcjs/components/MapTile/SelectId.js");
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
@@ -964,6 +971,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 
 
+
 function MapTile(_ref) {
   var map = _ref.map,
     configState = _ref.configState,
@@ -971,16 +979,11 @@ function MapTile(_ref) {
     username = _ref.username,
     token = _ref.token,
     setClick = _ref.setClick;
-  var layerIdsRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])([]);
   var mapRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])();
-  var _useState = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false),
+  var _useState = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(null),
     _useState2 = _slicedToArray(_useState, 2),
-    layersLoaded = _useState2[0],
-    setLayersLoaded = _useState2[1];
-  var _useState3 = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(null),
-    _useState4 = _slicedToArray(_useState3, 2),
-    clickedPolygonId = _useState4[0],
-    setClickedPolygonId = _useState4[1];
+    clickedPolygonId = _useState2[0],
+    setClickedPolygonId = _useState2[1];
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     mapRef.current = map.current;
   }, [map]);
@@ -1009,13 +1012,13 @@ function MapTile(_ref) {
   }, [select_id, setClick]);
 
   // Load the sourceLayers depending on configState.tileset
-  var _useState5 = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])({
+  var _useState3 = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])({
       vector_layers: [],
       url: ''
     }),
-    _useState6 = _slicedToArray(_useState5, 2),
-    sourceLayers = _useState6[0],
-    setSourceLayers = _useState6[1];
+    _useState4 = _slicedToArray(_useState3, 2),
+    sourceLayers = _useState4[0],
+    setSourceLayers = _useState4[1];
   // Get the source layers in the active tileset
   Object(_LayerJson__WEBPACK_IMPORTED_MODULE_4__["default"])({
     setSourceLayers: setSourceLayers,
@@ -1023,45 +1026,37 @@ function MapTile(_ref) {
     tileset: tileset,
     token: token
   });
+
+  // Keep current loaded layer IDs
+  var _useState5 = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])({
+      layerIds: [],
+      allLoaded: false
+    }),
+    _useState6 = _slicedToArray(_useState5, 2),
+    layerIds = _useState6[0],
+    setLayerIds = _useState6[1];
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
+    var _sourceLayers$vector_;
     // ensure the map object is initialized
-    if (!mapRef.current) return null;
-    if (sourceLayers.vector_layers === []) return null;
-    if (sourceLayers.vector_layers.length === 0) return null;
-
-    // Check if map style is loaded (timeout due to race condition with Stories component)
-    if (!mapRef.current.isStyleLoaded()) {
-      // If not loaded, wait for 250ms and then re-trigger the function
-      var timeoutId = setTimeout(function () {
-        setSourceLayers(function (oldSourceLayers) {
-          // Check if oldSourceLayers is iterable
-          if (oldSourceLayers && typeof oldSourceLayers[Symbol.iterator] === 'function') {
-            return _toConsumableArray(oldSourceLayers);
-          } else {
-            // If it's not iterable, return a default value (like an empty array)
-            return sourceLayers;
-          }
-        });
-      }, 250);
-
-      // Return cleanup function to clear the timeout
-      return function () {
-        return clearTimeout(timeoutId);
-      };
-    }
-    var layers = mapRef.current.getStyle().layers;
-    var buildingLayerId = layers.find(function (layer) {
-      return layer.type === 'fill' && layer.id.includes('building');
-    }).id;
+    if (!((_sourceLayers$vector_ = sourceLayers.vector_layers) !== null && _sourceLayers$vector_ !== void 0 && _sourceLayers$vector_.length)) return;
     var handleLoad = function handleLoad() {
-      var _sourceLayers$vector_;
-      // Keep track of added layers
-      var layerIds = [];
+      var _sourceLayers$vector_2;
+      var layers = mapRef.current.getStyle().layers;
+      // As the building layer is sometimes invisible, the pitch outline layer is the
+      // next one closer to use to put our choropleth layers under.
+      var buildingLayerId = layers.find(function (layer) {
+        return layer.type === 'line' && layer.id.includes('pitch-outline');
+      }).id;
 
       // Add the source layers to the map
-      (_sourceLayers$vector_ = sourceLayers.vector_layers) === null || _sourceLayers$vector_ === void 0 ? void 0 : _sourceLayers$vector_.forEach(function (sourceLayer, index) {
-        var layerId = "".concat(sourceLayer.id, "-").concat(index);
-        layerIds.push(layerId); // add the layer id to our array of added layers
+      (_sourceLayers$vector_2 = sourceLayers.vector_layers) === null || _sourceLayers$vector_2 === void 0 ? void 0 : _sourceLayers$vector_2.forEach(function (sourceLayer) {
+        var layerId = sourceLayer.id;
+        setLayerIds(function (prevLayerIds) {
+          return {
+            layerIds: [].concat(_toConsumableArray(prevLayerIds.layerIds), [layerId]),
+            allLoaded: false
+          };
+        });
         var hoveredPolygonId = null;
         mapRef.current.addSource(layerId, {
           type: 'vector',
@@ -1073,7 +1068,7 @@ function MapTile(_ref) {
           id: layerId,
           type: 'fill',
           source: layerId,
-          'source-layer': sourceLayer.id,
+          'source-layer': layerId,
           minzoom: sourceLayer.minzoom,
           maxzoom: sourceLayer.maxzoom,
           layout: {},
@@ -1089,7 +1084,7 @@ function MapTile(_ref) {
           id: layerId + '-outline',
           type: 'line',
           source: layerId,
-          'source-layer': sourceLayer.id,
+          'source-layer': layerId,
           minzoom: sourceLayer.minzoom,
           maxzoom: sourceLayer.maxzoom,
           layout: {},
@@ -1101,38 +1096,6 @@ function MapTile(_ref) {
           }
         });
 
-        // If it there is a select_id at init, set the feature state to `click: true`
-        if (select_id) {
-          var checkFeatures = function checkFeatures(attemptsRemaining) {
-            mapRef.current.once('idle', function () {
-              var features = mapRef.current.querySourceFeatures(layerId, {
-                sourceLayer: [sourceLayer.id]
-              });
-              var matchingFeature = features.find(function (feature) {
-                return feature.properties.ID === select_id;
-              });
-              if (matchingFeature) {
-                mapRef.current.setFeatureState({
-                  source: layerId,
-                  sourceLayer: sourceLayer.id,
-                  id: matchingFeature.id
-                }, {
-                  click: true
-                });
-                setClickedPolygonId(matchingFeature.id);
-              } else if (!matchingFeature && attemptsRemaining > 0) {
-                setTimeout(function () {
-                  return checkFeatures(attemptsRemaining - 1);
-                }, 250);
-              }
-            });
-          };
-          checkFeatures(5);
-        }
-
-        // Add the layer id to our array of added layers
-        layerIdsRef.current = layerIds;
-
         // If the layer is not pickable, then we don't want to add the hover effect
         if (!pickable) return;
 
@@ -1143,7 +1106,7 @@ function MapTile(_ref) {
             if (hoveredPolygonId !== null) {
               mapRef.current.setFeatureState({
                 source: layerId,
-                sourceLayer: sourceLayer.id,
+                sourceLayer: layerId,
                 id: hoveredPolygonId
               }, {
                 hover: false
@@ -1152,7 +1115,7 @@ function MapTile(_ref) {
             hoveredPolygonId = e.features[0].id;
             mapRef.current.setFeatureState({
               source: layerId,
-              sourceLayer: sourceLayer.id,
+              sourceLayer: layerId,
               id: hoveredPolygonId
             }, {
               hover: true
@@ -1166,7 +1129,7 @@ function MapTile(_ref) {
           if (hoveredPolygonId !== null) {
             mapRef.current.setFeatureState({
               source: layerId,
-              sourceLayer: sourceLayer.id,
+              sourceLayer: layerId,
               id: hoveredPolygonId
             }, {
               hover: false
@@ -1174,12 +1137,23 @@ function MapTile(_ref) {
           }
           hoveredPolygonId = null;
         });
+
+        // Add final to the layers added
+        setLayerIds(function (prevState) {
+          return _objectSpread(_objectSpread({}, prevState), {}, {
+            layerIds: [].concat(_toConsumableArray(prevState.layerIds), [layerId]),
+            // add the layer id
+            allLoaded: true
+          });
+        });
       });
     };
 
     // This function will clean up (remove) layers added from previous runs of this effect
     var removeLayers = function removeLayers() {
-      layerIdsRef.current.forEach(function (layerId) {
+      var currentLayerIds = _toConsumableArray(layerIds.layerIds); // Make a shallow copy
+
+      currentLayerIds.forEach(function (layerId) {
         if (mapRef.current.getLayer(layerId)) {
           mapRef.current.off('mousemove', layerId);
           mapRef.current.off('mouseleave', layerId);
@@ -1190,32 +1164,45 @@ function MapTile(_ref) {
       });
 
       // Clear the ref after removing layers
-      layerIdsRef.current = [];
+      setLayerIds({
+        layerIds: [],
+        allLoaded: false
+      });
     };
     removeLayers(); // Remove existing layers first
-    handleLoad(); // Add new layers afterwards
 
-    // set layers loaded state to true
-    setLayersLoaded(true);
+    // Add new layers afterwards
+    if (mapRef.current.isStyleLoaded()) {
+      handleLoad();
+    } else {
+      mapRef.current.on('load', handleLoad);
+    }
 
-    // Cleanup function to run when component is unmounted or when dependencies change
+    // // Cleanup function to run when component is unmounted or when dependencies change
     return function () {
       mapRef.current.off('load');
       removeLayers(); // Remove existing layers
     };
-  }, [sourceLayers, setSourceLayers, pickable, select_id]);
+  }, [sourceLayers, pickable, select_id]);
+
+  // Deal with polygons selected at init
+  Object(_MapTile_SelectId__WEBPACK_IMPORTED_MODULE_5__["default"])({
+    map: map,
+    select_id: select_id,
+    layerIds: layerIds,
+    setClickedPolygonId: setClickedPolygonId
+  });
 
   // React hook to manage change of map styling for the fill colour
   Object(_MapTile_FillColour__WEBPACK_IMPORTED_MODULE_3__["default"])({
     configState: configState,
-    sourceLayers: sourceLayers,
     map: map,
-    layersLoaded: layersLoaded
+    layerIds: layerIds
   });
 
   // React hook to manage change of map styling for the click style
   Object(_MapTile_HandleClickStyle__WEBPACK_IMPORTED_MODULE_2__["default"])({
-    sourceLayers: sourceLayers,
+    layerIds: layerIds,
     map: map,
     click: click,
     configState: configState,
@@ -1265,43 +1252,35 @@ function BuildingStyle(_ref) {
     zoom = _useState2[0],
     setZoom = _useState2[1];
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
-    if (!mapRef.current) return; // wait for map to initialize
-
+    if (!mapRef.current) return;
     var handleMove = function handleMove() {
-      var zoom = mapRef.current.getZoom().toFixed(2);
+      var zoom = Math.round(mapRef.current.getZoom());
       setZoom(zoom);
     };
     mapRef.current.on('moveend', handleMove);
     return function () {
       mapRef.current.off('moveend', handleMove);
     };
-  }, [setZoom]); // empty dependency array as this effect only needs to be setup once
+  }, []);
 
   // React hook to manage building layer
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
-    // If there are no layers, do nothing
-    if (sourceLayers.vector_layers.length === 0) return null;
+    if (sourceLayers.vector_layers.length === 0) return;
     var layers = mapRef.current.getStyle().layers;
     var buildingLayer = layers.find(function (layer) {
       return layer.type === 'fill' && layer.id === 'building';
     });
-
-    // Check if building layer exists
-    if (!buildingLayer) return null;
+    if (!buildingLayer) return;
     var buildingLayerId = buildingLayer.id;
-
-    // Check if a source layer containing 'building' is within its zoom range
     var visibleBuildingSourceLayer = sourceLayers.vector_layers.find(function (layer) {
       return layer.id.includes('building') && zoom >= layer.minzoom && zoom <= layer.maxzoom;
     });
-
-    // If such a layer exists, set the visibility of the buildingLayer to 'none', otherwise 'visible'
     if (visibleBuildingSourceLayer) {
       mapRef.current.setLayoutProperty(buildingLayerId, 'visibility', 'none');
     } else {
       mapRef.current.setLayoutProperty(buildingLayerId, 'visibility', 'visible');
     }
-  }, [sourceLayers.vector_layers, zoom]);
+  }, [zoom, sourceLayers.vector_layers]);
 }
 /* harmony default export */ __webpack_exports__["default"] = (BuildingStyle);
 
@@ -1321,9 +1300,8 @@ __webpack_require__.r(__webpack_exports__);
 
 function FillColour(_ref) {
   var configState = _ref.configState,
-    sourceLayers = _ref.sourceLayers,
     map = _ref.map,
-    layersLoaded = _ref.layersLoaded;
+    layerIds = _ref.layerIds;
   var mapRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])();
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     mapRef.current = map.current;
@@ -1338,16 +1316,13 @@ function FillColour(_ref) {
 
   // React hook to manage change of map styling for the fill colour
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
-    var _sourceLayers$vector_;
-    if (!mapRef.current || sourceLayers.vector_layers.length === 0 || !layersLoaded ||
-    // add the check for whether the layers have been loaded here
-    !styleFunction) return null;
-    (_sourceLayers$vector_ = sourceLayers.vector_layers) === null || _sourceLayers$vector_ === void 0 ? void 0 : _sourceLayers$vector_.forEach(function (sourceLayer, index) {
-      var layerId = "".concat(sourceLayer.id, "-").concat(index);
+    var _layerIds$layerIds;
+    if (!mapRef.current || !layerIds.allLoaded) return null;
+    (_layerIds$layerIds = layerIds.layerIds) === null || _layerIds$layerIds === void 0 ? void 0 : _layerIds$layerIds.forEach(function (layerId) {
       mapRef.current.setPaintProperty(layerId, 'fill-color', styleFunction);
       mapRef.current.setPaintProperty(layerId, 'fill-outline-color', styleFunction);
     });
-  }, [sourceLayers.vector_layers, styleFunction, layersLoaded]);
+  }, [styleFunction, layerIds]);
 }
 /* harmony default export */ __webpack_exports__["default"] = (FillColour);
 
@@ -1367,7 +1342,7 @@ __webpack_require__.r(__webpack_exports__);
 // Update the 'click' state of the polygon that was clicked to true for styling purposes
 
 function HandleClickStyle(_ref) {
-  var sourceLayers = _ref.sourceLayers,
+  var layerIds = _ref.layerIds,
     map = _ref.map,
     click = _ref.click,
     configState = _ref.configState,
@@ -1381,17 +1356,16 @@ function HandleClickStyle(_ref) {
 
   // React hook to manage click style
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
-    var _sourceLayers$vector_;
+    var _layerIds$layerIds;
     // ensure the map object is initialized
-    if (!mapRef.current || !mapRef.current.isStyleLoaded() || !configState.choropleth || sourceLayers.vector_layers.length === 0 || !configState.choropleth.pickable) return null;
+    if (!mapRef.current || !mapRef.current.isStyleLoaded() || !configState.choropleth || !configState.choropleth.pickable) return null;
 
     // Reset the 'click' state of the previously clicked polygon
     if (clickedPolygonId !== null) {
-      sourceLayers.vector_layers.forEach(function (sourceLayer, index) {
-        var layerId = "".concat(sourceLayer.id, "-").concat(index);
+      layerIds.layerIds.forEach(function (layerId) {
         mapRef.current.setFeatureState({
           source: layerId,
-          sourceLayer: sourceLayer.id,
+          sourceLayer: layerId,
           id: clickedPolygonId
         }, {
           click: false
@@ -1399,10 +1373,9 @@ function HandleClickStyle(_ref) {
       });
     }
     if (!click.ID) return;
-    (_sourceLayers$vector_ = sourceLayers.vector_layers) === null || _sourceLayers$vector_ === void 0 ? void 0 : _sourceLayers$vector_.forEach(function (sourceLayer, index) {
-      var layerId = "".concat(sourceLayer.id, "-").concat(index);
+    (_layerIds$layerIds = layerIds.layerIds) === null || _layerIds$layerIds === void 0 ? void 0 : _layerIds$layerIds.forEach(function (layerId) {
       var features = mapRef.current.querySourceFeatures(layerId, {
-        sourceLayer: [sourceLayer.id]
+        sourceLayer: [layerId]
       });
       var matchingFeature = features.find(function (feature) {
         return feature.properties.ID === click.ID;
@@ -1411,16 +1384,75 @@ function HandleClickStyle(_ref) {
         setClickedPolygonId(matchingFeature.id);
         mapRef.current.setFeatureState({
           source: layerId,
-          sourceLayer: sourceLayer.id,
+          sourceLayer: layerId,
           id: matchingFeature.id
         }, {
           click: true
         });
       }
     });
-  }, [click, sourceLayers.vector_layers, configState.choropleth]);
+  }, [click, layerIds, configState.choropleth, clickedPolygonId, setClickedPolygonId]);
 }
 /* harmony default export */ __webpack_exports__["default"] = (HandleClickStyle);
+
+/***/ }),
+
+/***/ "./srcjs/components/MapTile/SelectId.js":
+/*!**********************************************!*\
+  !*** ./srcjs/components/MapTile/SelectId.js ***!
+  \**********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+// If there is a selected ID at init
+
+function SelectId(_ref) {
+  var map = _ref.map,
+    select_id = _ref.select_id,
+    layerIds = _ref.layerIds,
+    setClickedPolygonId = _ref.setClickedPolygonId;
+  var mapRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])();
+  Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
+    mapRef.current = map.current;
+  }, [map]);
+  Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
+    if (!layerIds.allLoaded || !select_id) return;
+    var selectFeatureIfMatches = function selectFeatureIfMatches(layerId) {
+      var features = mapRef.current.querySourceFeatures(layerId, {
+        sourceLayer: [layerId] // Adjust if needed
+      });
+
+      var matchingFeature = features.find(function (feature) {
+        return feature.properties.ID === select_id;
+      });
+      if (matchingFeature) {
+        mapRef.current.setFeatureState({
+          source: layerId,
+          sourceLayer: layerId,
+          id: matchingFeature.id
+        }, {
+          click: true
+        });
+        setClickedPolygonId(matchingFeature.id);
+      }
+    };
+    var onDataLoad = function onDataLoad(event) {
+      if (event.isSourceLoaded) {
+        layerIds.layerIds.forEach(selectFeatureIfMatches);
+      }
+    };
+    mapRef.current.on('sourcedata', onDataLoad);
+    return function () {
+      // Cleanup the listener when component is unmounted or dependencies change
+      mapRef.current.off('sourcedata', onDataLoad);
+    };
+  }, [layerIds, select_id, setClickedPolygonId]);
+}
+/* harmony default export */ __webpack_exports__["default"] = (SelectId);
 
 /***/ }),
 

@@ -10,11 +10,10 @@ function BuildingStyle({ sourceLayers, map }) {
 	const [zoom, setZoom] = useState(0)
 
 	useEffect(() => {
-		if (!mapRef.current) return // wait for map to initialize
+		if (!mapRef.current) return
 
 		const handleMove = () => {
-			const zoom = mapRef.current.getZoom().toFixed(2)
-
+			const zoom = Math.round(mapRef.current.getZoom())
 			setZoom(zoom)
 		}
 
@@ -23,24 +22,19 @@ function BuildingStyle({ sourceLayers, map }) {
 		return () => {
 			mapRef.current.off('moveend', handleMove)
 		}
-	}, [setZoom]) // empty dependency array as this effect only needs to be setup once
+	}, [])
 
 	// React hook to manage building layer
 	useEffect(() => {
-		// If there are no layers, do nothing
-		if (sourceLayers.vector_layers.length === 0) return null
+		if (sourceLayers.vector_layers.length === 0) return
 
 		const layers = mapRef.current.getStyle().layers
 		const buildingLayer = layers.find(
 			(layer) => layer.type === 'fill' && layer.id === 'building'
 		)
-
-		// Check if building layer exists
-		if (!buildingLayer) return null
+		if (!buildingLayer) return
 
 		const buildingLayerId = buildingLayer.id
-
-		// Check if a source layer containing 'building' is within its zoom range
 		const visibleBuildingSourceLayer = sourceLayers.vector_layers.find(
 			(layer) =>
 				layer.id.includes('building') &&
@@ -48,7 +42,6 @@ function BuildingStyle({ sourceLayers, map }) {
 				zoom <= layer.maxzoom
 		)
 
-		// If such a layer exists, set the visibility of the buildingLayer to 'none', otherwise 'visible'
 		if (visibleBuildingSourceLayer) {
 			mapRef.current.setLayoutProperty(
 				buildingLayerId,
@@ -62,6 +55,6 @@ function BuildingStyle({ sourceLayers, map }) {
 				'visible'
 			)
 		}
-	}, [sourceLayers.vector_layers, zoom])
+	}, [zoom, sourceLayers.vector_layers])
 }
 export default BuildingStyle

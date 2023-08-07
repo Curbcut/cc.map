@@ -2,7 +2,7 @@
 import { useEffect, useRef } from 'react'
 
 function HandleClickStyle({
-	sourceLayers,
+	layerIds,
 	map,
 	click,
 	configState,
@@ -22,19 +22,17 @@ function HandleClickStyle({
 			!mapRef.current ||
 			!mapRef.current.isStyleLoaded() ||
 			!configState.choropleth ||
-			sourceLayers.vector_layers.length === 0 ||
 			!configState.choropleth.pickable
 		)
 			return null
 
 		// Reset the 'click' state of the previously clicked polygon
 		if (clickedPolygonId !== null) {
-			sourceLayers.vector_layers.forEach((sourceLayer, index) => {
-				const layerId = `${sourceLayer.id}-${index}`
+			layerIds.layerIds.forEach((layerId) => {
 				mapRef.current.setFeatureState(
 					{
 						source: layerId,
-						sourceLayer: sourceLayer.id,
+						sourceLayer: layerId,
 						id: clickedPolygonId,
 					},
 					{ click: false }
@@ -44,10 +42,9 @@ function HandleClickStyle({
 
 		if (!click.ID) return
 
-		sourceLayers.vector_layers?.forEach((sourceLayer, index) => {
-			const layerId = `${sourceLayer.id}-${index}`
+		layerIds.layerIds?.forEach((layerId) => {
 			const features = mapRef.current.querySourceFeatures(layerId, {
-				sourceLayer: [sourceLayer.id],
+				sourceLayer: [layerId],
 			})
 			const matchingFeature = features.find(
 				(feature) => feature.properties.ID === click.ID
@@ -58,14 +55,20 @@ function HandleClickStyle({
 				mapRef.current.setFeatureState(
 					{
 						source: layerId,
-						sourceLayer: sourceLayer.id,
+						sourceLayer: layerId,
 						id: matchingFeature.id,
 					},
 					{ click: true }
 				)
 			}
 		})
-	}, [click, sourceLayers.vector_layers, configState.choropleth])
+	}, [
+		click,
+		layerIds,
+		configState.choropleth,
+		clickedPolygonId,
+		setClickedPolygonId,
+	])
 }
 
 export default HandleClickStyle

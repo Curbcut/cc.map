@@ -1,6 +1,6 @@
 import { useEffect, useRef, useMemo } from 'react'
 
-function FillColour({ configState, sourceLayers, map, layersLoaded }) {
+function FillColour({ configState, map, layerIds }) {
 	const mapRef = useRef()
 	useEffect(() => {
 		mapRef.current = map.current
@@ -18,16 +18,9 @@ function FillColour({ configState, sourceLayers, map, layersLoaded }) {
 
 	// React hook to manage change of map styling for the fill colour
 	useEffect(() => {
-		if (
-			!mapRef.current ||
-			sourceLayers.vector_layers.length === 0 ||
-			!layersLoaded || // add the check for whether the layers have been loaded here
-			!styleFunction
-		)
-			return null
+		if (!mapRef.current || !layerIds.allLoaded) return null
 
-		sourceLayers.vector_layers?.forEach((sourceLayer, index) => {
-			const layerId = `${sourceLayer.id}-${index}`
+		layerIds.layerIds?.forEach((layerId) => {
 			mapRef.current.setPaintProperty(
 				layerId,
 				'fill-color',
@@ -39,7 +32,7 @@ function FillColour({ configState, sourceLayers, map, layersLoaded }) {
 				styleFunction
 			)
 		})
-	}, [sourceLayers.vector_layers, styleFunction, layersLoaded])
+	}, [styleFunction, layerIds])
 }
 
 export default FillColour
