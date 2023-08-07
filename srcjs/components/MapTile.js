@@ -60,9 +60,6 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 	const [layerIds, setLayerIds] = useState({ layerIds: [], allLoaded: false })
 
 	useEffect(() => {
-		// ensure the map object is initialized
-		if (!sourceLayers.vector_layers?.length) return
-
 		const handleLoad = () => {
 			const layers = mapRef.current.getStyle().layers
 			// As the building layer is sometimes invisible, the pitch outline layer is the
@@ -180,14 +177,14 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 					}
 					hoveredPolygonId = null
 				})
-
-				// Add final to the layers added
-				setLayerIds((prevState) => ({
-					...prevState,
-					layerIds: [...prevState.layerIds, layerId], // add the layer id
-					allLoaded: true,
-				}))
 			})
+
+			// Once all the layers are loaded
+			setLayerIds((prevState) => ({
+				...prevState,
+				layerIds: [...prevState.layerIds], // add the layer id
+				allLoaded: true,
+			}))
 		}
 
 		// This function will clean up (remove) layers added from previous runs of this effect

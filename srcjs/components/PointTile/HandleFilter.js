@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-function HandleFilter({ map, configState, sourceLayers }) {
+function HandleFilter({ map, configState, layerIds }) {
 	const mapRef = useRef()
 	useEffect(() => {
 		mapRef.current = map.current
@@ -10,22 +10,18 @@ function HandleFilter({ map, configState, sourceLayers }) {
 		if (
 			!mapRef.current ||
 			!configState.heatmap ||
-			!configState.heatmap.filter ||
-			sourceLayers.vector_layers.length === 0
-		) {
+			!configState.heatmap.filter
+		)
 			return
-		}
 
-		sourceLayers.vector_layers?.forEach((sourceLayer, index) => {
-			const layerId = `${sourceLayer.id}-${index}`
-
+		layerIds.layerIds?.forEach((layerId) => {
 			mapRef.current.setFilter(layerId, configState.heatmap.filter)
 			mapRef.current.setFilter(
 				layerId + '-point',
 				configState.heatmap.filter
 			)
 		})
-	}, [map, configState.heatmap, sourceLayers.vector_layers])
+	}, [map, configState.heatmap, layerIds])
 }
 
 export default HandleFilter

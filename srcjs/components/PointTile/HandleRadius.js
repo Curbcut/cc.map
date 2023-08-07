@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-function HandleRadius({ map, configState, sourceLayers }) {
+function HandleRadius({ map, configState, layerIds }) {
 	const mapRef = useRef()
 	useEffect(() => {
 		mapRef.current = map.current
@@ -10,22 +10,19 @@ function HandleRadius({ map, configState, sourceLayers }) {
 		if (
 			!mapRef.current ||
 			!configState.heatmap ||
-			!configState.heatmap.radius ||
-			sourceLayers.vector_layers.length === 0
+			!configState.heatmap.radius
 		) {
 			return
 		}
 
-		sourceLayers.vector_layers?.forEach((sourceLayer, index) => {
-			const layerId = `${sourceLayer.id}-${index}`
-
+		layerIds.layerIds?.forEach((layerId) => {
 			mapRef.current.setPaintProperty(
 				layerId,
 				'heatmap-radius',
 				configState.heatmap.radius
 			)
 		})
-	}, [mapRef, configState.heatmap, sourceLayers.vector_layers])
+	}, [mapRef, configState.heatmap, layerIds])
 }
 
 export default HandleRadius

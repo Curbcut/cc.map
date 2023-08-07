@@ -37,27 +37,27 @@ function PointTile({ map, configState, username, token }) {
 		token,
 	})
 
+	// Keep current loaded layer IDs
+	const [layerIds, setLayerIds] = useState({ layerIds: [], allLoaded: false })
+
 	useEffect(() => {
-		// ensure the map object is initialized
-		if (!mapRef.current) return null
-		if (!tileset) return null
-		if (sourceLayers.vector_layers.length === 0) return null
-
-		const layers = mapRef.current.getStyle().layers
-		const buildingLayerId = layers.find(
-			(layer) => layer.type === 'symbol' && layer.id.includes('label')
-		).id
-
 		const handleLoad = () => {
+			const layers = mapRef.current.getStyle().layers
+			const buildingLayerId = layers.find(
+				(layer) => layer.type === 'symbol' && layer.id.includes('label')
+			).id
+
 			// Keep track of added layers
 			const layerIds = []
 			let hoveredPointId = null
 
 			// Add the source layers to the map
 			sourceLayers.vector_layers?.forEach((sourceLayer, index) => {
-				const layerId = `${sourceLayer.id}-${index}`
-				layerIds.push(layerId) // add the layer id to our array of added layers
-
+				const layerId = sourceLayer.id
+				setLayerIds((prevLayerIds) => ({
+					layerIds: [...prevLayerIds.layerIds, layerId],
+					allLoaded: false,
+				}))
 				mapRef.current.addSource(layerId, {
 					type: 'vector',
 					url: sourceLayers.url,
@@ -198,11 +198,20 @@ function PointTile({ map, configState, username, token }) {
 					hoveredPointId = null
 				})
 			})
+
+			// Once all the layers are loaded
+			setLayerIds((prevState) => ({
+				...prevState,
+				layerIds: [...prevState.layerIds], // add the layer id
+				allLoaded: true,
+			}))
 		}
 
 		// This function will clean up (remove) layers added from previous runs of this effect
 		const removeLayers = () => {
-			layerIdsRef.current.forEach((layerId) => {
+			const currentLayerIds = [...layerIds.layerIds] // Make a shallow copy
+
+			currentLayerIds.forEach((layerId) => {
 				if (mapRef.current.getLayer(layerId)) {
 					mapRef.current.off('mousemove', layerId)
 					mapRef.current.off('mouseleave', layerId)
@@ -213,26 +222,26 @@ function PointTile({ map, configState, username, token }) {
 			})
 
 			// Clear the ref after removing layers
-			layerIdsRef.current = []
+			setLayerIds({ layerIds: [], allLoaded: false })
 		}
 
 		removeLayers() // Remove existing layers first
-		handleLoad() // Add new layers afterwards
+
+		// Add new layers afterwards
+		if (mapRef.current.isStyleLoaded()) {
+			handleLoad()
+		} else {
+			mapRef.current.on('load', handleLoad)
+		}
 
 		// Cleanup function to run when component is unmounted or when dependencies change
 		return () => {
 			mapRef.current.off('load')
 			removeLayers() // Remove existing layers
 		}
-	}, [
-		sourceLayers.vector_layers,
-		sourceLayers.url,
-		pickable,
-		setSourceLayers,
-		tileset,
-	])
+	}, [sourceLayers, pickable, setLayerIds])
 
-	HandleFilter({ map, configState, sourceLayers })
-	HandleRadius({ map, configState, sourceLayers })
+	HandleFilter({ map, configState, layerIds })
+	HandleRadius({ map, configState, layerIds })
 }
 export default PointTile

@@ -1036,11 +1036,8 @@ function MapTile(_ref) {
     layerIds = _useState6[0],
     setLayerIds = _useState6[1];
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
-    var _sourceLayers$vector_;
-    // ensure the map object is initialized
-    if (!((_sourceLayers$vector_ = sourceLayers.vector_layers) !== null && _sourceLayers$vector_ !== void 0 && _sourceLayers$vector_.length)) return;
     var handleLoad = function handleLoad() {
-      var _sourceLayers$vector_2;
+      var _sourceLayers$vector_;
       var layers = mapRef.current.getStyle().layers;
       // As the building layer is sometimes invisible, the pitch outline layer is the
       // next one closer to use to put our choropleth layers under.
@@ -1049,7 +1046,7 @@ function MapTile(_ref) {
       }).id;
 
       // Add the source layers to the map
-      (_sourceLayers$vector_2 = sourceLayers.vector_layers) === null || _sourceLayers$vector_2 === void 0 ? void 0 : _sourceLayers$vector_2.forEach(function (sourceLayer) {
+      (_sourceLayers$vector_ = sourceLayers.vector_layers) === null || _sourceLayers$vector_ === void 0 ? void 0 : _sourceLayers$vector_.forEach(function (sourceLayer) {
         var layerId = sourceLayer.id;
         setLayerIds(function (prevLayerIds) {
           return {
@@ -1137,14 +1134,14 @@ function MapTile(_ref) {
           }
           hoveredPolygonId = null;
         });
+      });
 
-        // Add final to the layers added
-        setLayerIds(function (prevState) {
-          return _objectSpread(_objectSpread({}, prevState), {}, {
-            layerIds: [].concat(_toConsumableArray(prevState.layerIds), [layerId]),
-            // add the layer id
-            allLoaded: true
-          });
+      // Once all the layers are loaded
+      setLayerIds(function (prevState) {
+        return _objectSpread(_objectSpread({}, prevState), {}, {
+          layerIds: _toConsumableArray(prevState.layerIds),
+          // add the layer id
+          allLoaded: true
         });
       });
     };
@@ -1516,6 +1513,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _LayerJson__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./LayerJson */ "./srcjs/components/LayerJson.js");
 /* harmony import */ var _PointTile_HandleFilter__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./PointTile/HandleFilter */ "./srcjs/components/PointTile/HandleFilter.js");
 /* harmony import */ var _PointTile_HandleRadius__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./PointTile/HandleRadius */ "./srcjs/components/PointTile/HandleRadius.js");
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
@@ -1562,26 +1569,36 @@ function PointTile(_ref) {
     tileset: tileset,
     token: token
   });
+
+  // Keep current loaded layer IDs
+  var _useState3 = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])({
+      layerIds: [],
+      allLoaded: false
+    }),
+    _useState4 = _slicedToArray(_useState3, 2),
+    layerIds = _useState4[0],
+    setLayerIds = _useState4[1];
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
-    // ensure the map object is initialized
-    if (!mapRef.current) return null;
-    if (!tileset) return null;
-    if (sourceLayers.vector_layers.length === 0) return null;
-    var layers = mapRef.current.getStyle().layers;
-    var buildingLayerId = layers.find(function (layer) {
-      return layer.type === 'symbol' && layer.id.includes('label');
-    }).id;
     var handleLoad = function handleLoad() {
       var _sourceLayers$vector_;
+      var layers = mapRef.current.getStyle().layers;
+      var buildingLayerId = layers.find(function (layer) {
+        return layer.type === 'symbol' && layer.id.includes('label');
+      }).id;
+
       // Keep track of added layers
       var layerIds = [];
       var hoveredPointId = null;
 
       // Add the source layers to the map
       (_sourceLayers$vector_ = sourceLayers.vector_layers) === null || _sourceLayers$vector_ === void 0 ? void 0 : _sourceLayers$vector_.forEach(function (sourceLayer, index) {
-        var layerId = "".concat(sourceLayer.id, "-").concat(index);
-        layerIds.push(layerId); // add the layer id to our array of added layers
-
+        var layerId = sourceLayer.id;
+        setLayerIds(function (prevLayerIds) {
+          return {
+            layerIds: [].concat(_toConsumableArray(prevLayerIds.layerIds), [layerId]),
+            allLoaded: false
+          };
+        });
         mapRef.current.addSource(layerId, {
           type: 'vector',
           url: sourceLayers.url
@@ -1668,11 +1685,22 @@ function PointTile(_ref) {
           hoveredPointId = null;
         });
       });
+
+      // Once all the layers are loaded
+      setLayerIds(function (prevState) {
+        return _objectSpread(_objectSpread({}, prevState), {}, {
+          layerIds: _toConsumableArray(prevState.layerIds),
+          // add the layer id
+          allLoaded: true
+        });
+      });
     };
 
     // This function will clean up (remove) layers added from previous runs of this effect
     var removeLayers = function removeLayers() {
-      layerIdsRef.current.forEach(function (layerId) {
+      var currentLayerIds = _toConsumableArray(layerIds.layerIds); // Make a shallow copy
+
+      currentLayerIds.forEach(function (layerId) {
         if (mapRef.current.getLayer(layerId)) {
           mapRef.current.off('mousemove', layerId);
           mapRef.current.off('mouseleave', layerId);
@@ -1683,26 +1711,35 @@ function PointTile(_ref) {
       });
 
       // Clear the ref after removing layers
-      layerIdsRef.current = [];
+      setLayerIds({
+        layerIds: [],
+        allLoaded: false
+      });
     };
     removeLayers(); // Remove existing layers first
-    handleLoad(); // Add new layers afterwards
+
+    // Add new layers afterwards
+    if (mapRef.current.isStyleLoaded()) {
+      handleLoad();
+    } else {
+      mapRef.current.on('load', handleLoad);
+    }
 
     // Cleanup function to run when component is unmounted or when dependencies change
     return function () {
       mapRef.current.off('load');
       removeLayers(); // Remove existing layers
     };
-  }, [sourceLayers.vector_layers, sourceLayers.url, pickable, setSourceLayers, tileset]);
+  }, [sourceLayers, pickable, setLayerIds]);
   Object(_PointTile_HandleFilter__WEBPACK_IMPORTED_MODULE_2__["default"])({
     map: map,
     configState: configState,
-    sourceLayers: sourceLayers
+    layerIds: layerIds
   });
   Object(_PointTile_HandleRadius__WEBPACK_IMPORTED_MODULE_3__["default"])({
     map: map,
     configState: configState,
-    sourceLayers: sourceLayers
+    layerIds: layerIds
   });
 }
 /* harmony default export */ __webpack_exports__["default"] = (PointTile);
@@ -1724,22 +1761,19 @@ __webpack_require__.r(__webpack_exports__);
 function HandleFilter(_ref) {
   var map = _ref.map,
     configState = _ref.configState,
-    sourceLayers = _ref.sourceLayers;
+    layerIds = _ref.layerIds;
   var mapRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])();
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     mapRef.current = map.current;
   }, [map]);
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
-    var _sourceLayers$vector_;
-    if (!mapRef.current || !configState.heatmap || !configState.heatmap.filter || sourceLayers.vector_layers.length === 0) {
-      return;
-    }
-    (_sourceLayers$vector_ = sourceLayers.vector_layers) === null || _sourceLayers$vector_ === void 0 ? void 0 : _sourceLayers$vector_.forEach(function (sourceLayer, index) {
-      var layerId = "".concat(sourceLayer.id, "-").concat(index);
+    var _layerIds$layerIds;
+    if (!mapRef.current || !configState.heatmap || !configState.heatmap.filter) return;
+    (_layerIds$layerIds = layerIds.layerIds) === null || _layerIds$layerIds === void 0 ? void 0 : _layerIds$layerIds.forEach(function (layerId) {
       mapRef.current.setFilter(layerId, configState.heatmap.filter);
       mapRef.current.setFilter(layerId + '-point', configState.heatmap.filter);
     });
-  }, [map, configState.heatmap, sourceLayers.vector_layers]);
+  }, [map, configState.heatmap, layerIds]);
 }
 /* harmony default export */ __webpack_exports__["default"] = (HandleFilter);
 
@@ -1760,21 +1794,20 @@ __webpack_require__.r(__webpack_exports__);
 function HandleRadius(_ref) {
   var map = _ref.map,
     configState = _ref.configState,
-    sourceLayers = _ref.sourceLayers;
+    layerIds = _ref.layerIds;
   var mapRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])();
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     mapRef.current = map.current;
   }, [map]);
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
-    var _sourceLayers$vector_;
-    if (!mapRef.current || !configState.heatmap || !configState.heatmap.radius || sourceLayers.vector_layers.length === 0) {
+    var _layerIds$layerIds;
+    if (!mapRef.current || !configState.heatmap || !configState.heatmap.radius) {
       return;
     }
-    (_sourceLayers$vector_ = sourceLayers.vector_layers) === null || _sourceLayers$vector_ === void 0 ? void 0 : _sourceLayers$vector_.forEach(function (sourceLayer, index) {
-      var layerId = "".concat(sourceLayer.id, "-").concat(index);
+    (_layerIds$layerIds = layerIds.layerIds) === null || _layerIds$layerIds === void 0 ? void 0 : _layerIds$layerIds.forEach(function (layerId) {
       mapRef.current.setPaintProperty(layerId, 'heatmap-radius', configState.heatmap.radius);
     });
-  }, [mapRef, configState.heatmap, sourceLayers.vector_layers]);
+  }, [mapRef, configState.heatmap, layerIds]);
 }
 /* harmony default export */ __webpack_exports__["default"] = (HandleRadius);
 
@@ -1809,73 +1842,77 @@ function Stories(_ref) {
   var map = _ref.map,
     configState = _ref.configState,
     username = _ref.username;
-  var currentMap = map.current;
-  var timeoutId = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])(null);
+  var mapRef = Object(react__WEBPACK_IMPORTED_MODULE_0__["useRef"])();
+  Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
+    mapRef.current = map.current;
+  }, [map]);
   var _useState = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false),
     _useState2 = _slicedToArray(_useState, 2),
-    triggerRerender = _useState2[0],
-    setTriggerRerender = _useState2[1];
+    storiesLoaded = _useState2[0],
+    setStoriesLoaded = _useState2[1];
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
-    if (!currentMap || !configState.stories) return;
-    if (!currentMap.isStyleLoaded()) {
-      timeoutId.current = setTimeout(function () {
-        // Force a re-render to trigger useEffect again
-        setTriggerRerender(function (prev) {
-          return !prev;
-        });
-      }, 250);
-      return;
-    }
-    var url = "mapbox://".concat(username, ".").concat(configState.stories);
+    if (!configState.stories || storiesLoaded) return;
     var hoveredPolygonId = null;
-    currentMap.addSource(configState.stories, {
-      type: 'vector',
-      url: url
-    });
-
-    // Load all images and add them to the map
-    Object.entries(configState.stories_img).forEach(function (_ref2) {
-      var _ref3 = _slicedToArray(_ref2, 2),
-        name_id = _ref3[0],
-        base64 = _ref3[1];
-      currentMap.loadImage(base64, function (error, image) {
-        if (error) throw error;
-        currentMap.addImage(name_id, image);
+    function addStoryToMap() {
+      console.log('trigg');
+      var url = "mapbox://".concat(username, ".").concat(configState.stories);
+      mapRef.current.addSource(configState.stories, {
+        type: 'vector',
+        url: url
       });
-    });
-
-    // add layer
-    currentMap.addLayer({
-      id: configState.stories,
-      type: 'symbol',
-      source: configState.stories,
-      'source-layer': configState.stories,
-      minzoom: 13,
-      maxzoom: 22,
-      layout: {
-        'icon-image': ['match', ['get', 'name_id']].concat(_toConsumableArray(Object.keys(configState.stories_img).flatMap(function (name_id) {
-          return [name_id, name_id];
-        })), ['default-image-id' // fallback image
-        ]),
-
-        'icon-size': 0.75
-      },
-      paint: {
-        'icon-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 1, 0.8]
-      }
-    });
-
-    // Move the layer to the top
-    var layers = currentMap.getStyle().layers;
-    var lastLayer = layers[layers.length - 1].id;
-    currentMap.moveLayer(configState.stories, lastLayer);
-
-    // On the layer, set the feature state to `hover: true` when the mouse
-    // is over it.
-    currentMap.on('mousemove', configState.stories, function (e) {
-      if (e.features.length > 0) {
+      Object.entries(configState.stories_img).forEach(function (_ref2) {
+        var _ref3 = _slicedToArray(_ref2, 2),
+          name_id = _ref3[0],
+          base64 = _ref3[1];
+        mapRef.current.loadImage(base64, function (error, image) {
+          if (error) throw error;
+          mapRef.current.addImage(name_id, image);
+        });
+      });
+      mapRef.current.addLayer({
+        id: configState.stories,
+        type: 'symbol',
+        source: configState.stories,
+        'source-layer': configState.stories,
+        minzoom: 13,
+        maxzoom: 22,
+        layout: {
+          'icon-image': ['match', ['get', 'name_id']].concat(_toConsumableArray(Object.keys(configState.stories_img).flatMap(function (name_id) {
+            return [name_id, name_id];
+          })), ['default-image-id']),
+          'icon-size': 0.75
+        },
+        paint: {
+          'icon-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 1, 0.8]
+        }
+      });
+      var layers = mapRef.current.getStyle().layers;
+      var lastLayer = layers[layers.length - 1].id;
+      mapRef.current.moveLayer(configState.stories, lastLayer);
+      mapRef.current.on('mousemove', configState.stories, function (e) {
+        if (e.features.length > 0) {
+          if (hoveredPolygonId !== null) {
+            mapRef.current.setFeatureState({
+              source: configState.stories,
+              sourceLayer: configState.stories,
+              id: hoveredPolygonId
+            }, {
+              hover: false
+            });
+          }
+          hoveredPolygonId = e.features[0].id;
+          mapRef.current.setFeatureState({
+            source: configState.stories,
+            sourceLayer: configState.stories,
+            id: hoveredPolygonId
+          }, {
+            hover: true
+          });
+        }
+      });
+      mapRef.current.on('mouseleave', configState.stories, function () {
         if (hoveredPolygonId !== null) {
-          currentMap.setFeatureState({
+          mapRef.current.setFeatureState({
             source: configState.stories,
             sourceLayer: configState.stories,
             id: hoveredPolygonId
@@ -1883,86 +1920,50 @@ function Stories(_ref) {
             hover: false
           });
         }
-        hoveredPolygonId = e.features[0].id;
-        currentMap.setFeatureState({
-          source: configState.stories,
-          sourceLayer: configState.stories,
-          id: hoveredPolygonId
-        }, {
-          hover: true
-        });
-      }
-    });
-
-    // When the mouse leaves the layer, update the feature state of the
-    // previously hovered feature.
-    currentMap.on('mouseleave', configState.stories, function () {
-      if (hoveredPolygonId !== null) {
-        currentMap.setFeatureState({
-          source: configState.stories,
-          sourceLayer: configState.stories,
-          id: hoveredPolygonId
-        }, {
-          hover: false
-        });
-      }
-      hoveredPolygonId = null;
-    });
-
-    // Cleanup function
-    return function () {
-      if (timeoutId.current) clearTimeout(timeoutId.current);
-    };
-  }, [currentMap, configState.stories, username, triggerRerender, configState.tileset_prefix, configState.stories_img]);
-
-  // Add popup on hover for all stories. For that, wait for the stories layer
-  // to be added to the map, then add the popup.
-  var _useState3 = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false),
-    _useState4 = _slicedToArray(_useState3, 2),
-    storiesLayerAdded = _useState4[0],
-    setStoriesLayerAdded = _useState4[1];
-  var _useState5 = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(0),
-    _useState6 = _slicedToArray(_useState5, 2),
-    retryCount = _useState6[0],
-    setRetryCount = _useState6[1];
-  Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
-    if (!currentMap || !configState.stories || storiesLayerAdded || retryCount >= 5) return;
-    var layer = currentMap.getLayer(configState.stories);
-    if (!layer) {
-      setTimeout(function () {
-        setRetryCount(retryCount + 1);
-      }, 500);
-      return;
+        hoveredPolygonId = null;
+      });
     }
-    setStoriesLayerAdded(true);
-  }, [currentMap, configState.stories, storiesLayerAdded, retryCount]);
+    if (mapRef.current.isStyleLoaded()) {
+      setStoriesLoaded(true);
+      addStoryToMap();
+    } else {
+      setStoriesLoaded(true);
+      mapRef.current.on('load', addStoryToMap);
+    }
+  }, [mapRef.current, configState.stories, username, configState.tileset_prefix, configState.stories_img]);
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
-    if (!currentMap || !configState.stories) return;
-    if (!storiesLayerAdded) return;
+    if (!mapRef.current || !configState.stories) return;
     var popup = new mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.Popup({
       closeButton: false,
       closeOnClick: false
     });
     var handleMouseEnter = function handleMouseEnter(e) {
-      currentMap.getCanvas().style.cursor = 'pointer';
+      mapRef.current.getCanvas().style.cursor = 'pointer';
       var coordinates = e.features[0].geometry.coordinates.slice();
       var preview = e.features[0].properties["preview_".concat(configState.lang)];
       while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
         coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
       }
-      popup.setLngLat(coordinates).setHTML(preview).addTo(currentMap);
+      popup.setLngLat(coordinates).setHTML(preview).addTo(mapRef.current);
     };
     var handleMouseLeave = function handleMouseLeave() {
-      currentMap.getCanvas().style.cursor = '';
+      mapRef.current.getCanvas().style.cursor = '';
       popup.remove();
     };
-    currentMap.on('mouseenter', configState.stories, handleMouseEnter);
-    currentMap.on('mouseleave', configState.stories, handleMouseLeave);
+    if (mapRef.current.getLayer(configState.stories)) {
+      mapRef.current.on('mouseenter', configState.stories, handleMouseEnter);
+      mapRef.current.on('mouseleave', configState.stories, handleMouseLeave);
+    } else {
+      mapRef.current.on('load', function () {
+        mapRef.current.on('mouseenter', configState.stories, handleMouseEnter);
+        mapRef.current.on('mouseleave', configState.stories, handleMouseLeave);
+      });
+    }
     return function () {
-      currentMap.off('mouseenter', configState.stories, handleMouseEnter);
-      currentMap.off('mouseleave', configState.stories, handleMouseLeave);
+      mapRef.current.off('mouseenter', configState.stories, handleMouseEnter);
+      mapRef.current.off('mouseleave', configState.stories, handleMouseLeave);
     };
-  }, [currentMap, configState.stories, configState.lang, storiesLayerAdded]);
+  }, [mapRef.current, configState.stories, configState.lang]);
 }
 /* harmony default export */ __webpack_exports__["default"] = (Stories);
 

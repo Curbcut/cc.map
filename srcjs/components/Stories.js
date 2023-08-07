@@ -2,76 +2,95 @@ import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 
 function Stories({ map, configState, username }) {
-	const currentMap = map.current
-	const timeoutId = useRef(null)
-	const [triggerRerender, setTriggerRerender] = useState(false)
+	const mapRef = useRef()
 
 	useEffect(() => {
-		if (!currentMap || !configState.stories) return
-		if (!currentMap.isStyleLoaded()) {
-			timeoutId.current = setTimeout(() => {
-				// Force a re-render to trigger useEffect again
-				setTriggerRerender((prev) => !prev)
-			}, 250)
-			return
-		}
+		mapRef.current = map.current
+	}, [map])
 
-		const url = `mapbox://${username}.${configState.stories}`
+	const [storiesLoaded, setStoriesLoaded] = useState(false)
+
+	useEffect(() => {
+		if (!configState.stories || storiesLoaded) return
 		let hoveredPolygonId = null
 
-		currentMap.addSource(configState.stories, {
-			type: 'vector',
-			url: url,
-		})
+		function addStoryToMap() {
+			console.log('trigg')
+			const url = `mapbox://${username}.${configState.stories}`
 
-		// Load all images and add them to the map
-		Object.entries(configState.stories_img).forEach(([name_id, base64]) => {
-			currentMap.loadImage(base64, (error, image) => {
-				if (error) throw error
-				currentMap.addImage(name_id, image)
+			mapRef.current.addSource(configState.stories, {
+				type: 'vector',
+				url: url,
 			})
-		})
 
-		// add layer
-		currentMap.addLayer({
-			id: configState.stories,
-			type: 'symbol',
-			source: configState.stories,
-			'source-layer': configState.stories,
-			minzoom: 13,
-			maxzoom: 22,
-			layout: {
-				'icon-image': [
-					'match',
-					['get', 'name_id'],
-					...Object.keys(configState.stories_img).flatMap(
-						(name_id) => [name_id, name_id]
-					),
-					'default-image-id', // fallback image
-				],
-				'icon-size': 0.75,
-			},
-			paint: {
-				'icon-opacity': [
-					'case',
-					['boolean', ['feature-state', 'hover'], false],
-					1,
-					0.8,
-				],
-			},
-		})
+			Object.entries(configState.stories_img).forEach(
+				([name_id, base64]) => {
+					mapRef.current.loadImage(base64, (error, image) => {
+						if (error) throw error
+						mapRef.current.addImage(name_id, image)
+					})
+				}
+			)
 
-		// Move the layer to the top
-		const layers = currentMap.getStyle().layers
-		const lastLayer = layers[layers.length - 1].id
-		currentMap.moveLayer(configState.stories, lastLayer)
+			mapRef.current.addLayer({
+				id: configState.stories,
+				type: 'symbol',
+				source: configState.stories,
+				'source-layer': configState.stories,
+				minzoom: 13,
+				maxzoom: 22,
+				layout: {
+					'icon-image': [
+						'match',
+						['get', 'name_id'],
+						...Object.keys(configState.stories_img).flatMap(
+							(name_id) => [name_id, name_id]
+						),
+						'default-image-id',
+					],
+					'icon-size': 0.75,
+				},
+				paint: {
+					'icon-opacity': [
+						'case',
+						['boolean', ['feature-state', 'hover'], false],
+						1,
+						0.8,
+					],
+				},
+			})
 
-		// On the layer, set the feature state to `hover: true` when the mouse
-		// is over it.
-		currentMap.on('mousemove', configState.stories, (e) => {
-			if (e.features.length > 0) {
+			const layers = mapRef.current.getStyle().layers
+			const lastLayer = layers[layers.length - 1].id
+			mapRef.current.moveLayer(configState.stories, lastLayer)
+
+			mapRef.current.on('mousemove', configState.stories, (e) => {
+				if (e.features.length > 0) {
+					if (hoveredPolygonId !== null) {
+						mapRef.current.setFeatureState(
+							{
+								source: configState.stories,
+								sourceLayer: configState.stories,
+								id: hoveredPolygonId,
+							},
+							{ hover: false }
+						)
+					}
+					hoveredPolygonId = e.features[0].id
+					mapRef.current.setFeatureState(
+						{
+							source: configState.stories,
+							sourceLayer: configState.stories,
+							id: hoveredPolygonId,
+						},
+						{ hover: true }
+					)
+				}
+			})
+
+			mapRef.current.on('mouseleave', configState.stories, () => {
 				if (hoveredPolygonId !== null) {
-					currentMap.setFeatureState(
+					mapRef.current.setFeatureState(
 						{
 							source: configState.stories,
 							sourceLayer: configState.stories,
@@ -80,76 +99,27 @@ function Stories({ map, configState, username }) {
 						{ hover: false }
 					)
 				}
-				hoveredPolygonId = e.features[0].id
-				currentMap.setFeatureState(
-					{
-						source: configState.stories,
-						sourceLayer: configState.stories,
-						id: hoveredPolygonId,
-					},
-					{ hover: true }
-				)
-			}
-		})
+				hoveredPolygonId = null
+			})
+		}
 
-		// When the mouse leaves the layer, update the feature state of the
-		// previously hovered feature.
-		currentMap.on('mouseleave', configState.stories, () => {
-			if (hoveredPolygonId !== null) {
-				currentMap.setFeatureState(
-					{
-						source: configState.stories,
-						sourceLayer: configState.stories,
-						id: hoveredPolygonId,
-					},
-					{ hover: false }
-				)
-			}
-			hoveredPolygonId = null
-		})
-
-		// Cleanup function
-		return () => {
-			if (timeoutId.current) clearTimeout(timeoutId.current)
+		if (mapRef.current.isStyleLoaded()) {
+			setStoriesLoaded(true)
+			addStoryToMap()
+		} else {
+			setStoriesLoaded(true)
+			mapRef.current.on('load', addStoryToMap)
 		}
 	}, [
-		currentMap,
+		mapRef.current,
 		configState.stories,
 		username,
-		triggerRerender,
 		configState.tileset_prefix,
 		configState.stories_img,
 	])
 
-	// Add popup on hover for all stories. For that, wait for the stories layer
-	// to be added to the map, then add the popup.
-	const [storiesLayerAdded, setStoriesLayerAdded] = useState(false)
-	const [retryCount, setRetryCount] = useState(0)
-
 	useEffect(() => {
-		if (
-			!currentMap ||
-			!configState.stories ||
-			storiesLayerAdded ||
-			retryCount >= 5
-		)
-			return
-
-		const layer = currentMap.getLayer(configState.stories)
-
-		if (!layer) {
-			setTimeout(() => {
-				setRetryCount(retryCount + 1)
-			}, 500)
-			return
-		}
-
-		setStoriesLayerAdded(true)
-	}, [currentMap, configState.stories, storiesLayerAdded, retryCount])
-
-	useEffect(() => {
-		if (!currentMap || !configState.stories) return
-		if (!storiesLayerAdded) return
+		if (!mapRef.current || !configState.stories) return
 
 		const popup = new mapboxgl.Popup({
 			closeButton: false,
@@ -157,7 +127,7 @@ function Stories({ map, configState, username }) {
 		})
 
 		const handleMouseEnter = (e) => {
-			currentMap.getCanvas().style.cursor = 'pointer'
+			mapRef.current.getCanvas().style.cursor = 'pointer'
 
 			const coordinates = e.features[0].geometry.coordinates.slice()
 			const preview =
@@ -167,22 +137,53 @@ function Stories({ map, configState, username }) {
 				coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360
 			}
 
-			popup.setLngLat(coordinates).setHTML(preview).addTo(currentMap)
+			popup.setLngLat(coordinates).setHTML(preview).addTo(mapRef.current)
 		}
 
 		const handleMouseLeave = () => {
-			currentMap.getCanvas().style.cursor = ''
+			mapRef.current.getCanvas().style.cursor = ''
 			popup.remove()
 		}
 
-		currentMap.on('mouseenter', configState.stories, handleMouseEnter)
-		currentMap.on('mouseleave', configState.stories, handleMouseLeave)
+		if (mapRef.current.getLayer(configState.stories)) {
+			mapRef.current.on(
+				'mouseenter',
+				configState.stories,
+				handleMouseEnter
+			)
+			mapRef.current.on(
+				'mouseleave',
+				configState.stories,
+				handleMouseLeave
+			)
+		} else {
+			mapRef.current.on('load', () => {
+				mapRef.current.on(
+					'mouseenter',
+					configState.stories,
+					handleMouseEnter
+				)
+				mapRef.current.on(
+					'mouseleave',
+					configState.stories,
+					handleMouseLeave
+				)
+			})
+		}
 
 		return () => {
-			currentMap.off('mouseenter', configState.stories, handleMouseEnter)
-			currentMap.off('mouseleave', configState.stories, handleMouseLeave)
+			mapRef.current.off(
+				'mouseenter',
+				configState.stories,
+				handleMouseEnter
+			)
+			mapRef.current.off(
+				'mouseleave',
+				configState.stories,
+				handleMouseLeave
+			)
 		}
-	}, [currentMap, configState.stories, configState.lang, storiesLayerAdded])
+	}, [mapRef.current, configState.stories, configState.lang])
 }
 
 export default Stories
