@@ -1852,15 +1852,18 @@ function Stories(_ref) {
     storiesLoaded = _useState2[0],
     setStoriesLoaded = _useState2[1];
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
-    if (!configState.stories || storiesLoaded) return;
+    var _configState$stories;
+    if (!((_configState$stories = configState.stories) !== null && _configState$stories !== void 0 && _configState$stories.stories) || storiesLoaded) return;
     var hoveredPolygonId = null;
     function addStoryToMap() {
-      var url = "mapbox://".concat(username, ".").concat(configState.stories);
-      mapRef.current.addSource(configState.stories, {
+      var url = "mapbox://".concat(username, ".").concat(configState.stories.stories);
+      var stories_img = JSON.parse(configState.stories.stories_img);
+      var stories_min_zoom = configState.stories.min_zoom ? configState.stories.min_zoom : 13;
+      mapRef.current.addSource(configState.stories.stories, {
         type: 'vector',
         url: url
       });
-      Object.entries(configState.stories_img).forEach(function (_ref2) {
+      Object.entries(stories_img).forEach(function (_ref2) {
         var _ref3 = _slicedToArray(_ref2, 2),
           name_id = _ref3[0],
           base64 = _ref3[1];
@@ -1870,31 +1873,33 @@ function Stories(_ref) {
         });
       });
       mapRef.current.addLayer({
-        id: configState.stories,
+        id: configState.stories.stories,
         type: 'symbol',
-        source: configState.stories,
-        'source-layer': configState.stories,
-        minzoom: 13,
+        source: configState.stories.stories,
+        'source-layer': configState.stories.stories,
+        minzoom: stories_min_zoom,
         maxzoom: 22,
         layout: {
-          'icon-image': ['match', ['get', 'name_id']].concat(_toConsumableArray(Object.keys(configState.stories_img).flatMap(function (name_id) {
+          'icon-image': ['match', ['get', 'name_id']].concat(_toConsumableArray(Object.keys(stories_img).flatMap(function (name_id) {
             return [name_id, name_id];
           })), ['default-image-id']),
-          'icon-size': 0.75
+          'icon-size': 0.75,
+          'icon-allow-overlap': true // Allow symbols to overlap
         },
+
         paint: {
           'icon-opacity': ['case', ['boolean', ['feature-state', 'hover'], false], 1, 0.8]
         }
       });
       var layers = mapRef.current.getStyle().layers;
       var lastLayer = layers[layers.length - 1].id;
-      mapRef.current.moveLayer(configState.stories, lastLayer);
-      mapRef.current.on('mousemove', configState.stories, function (e) {
+      mapRef.current.moveLayer(configState.stories.stories, lastLayer);
+      mapRef.current.on('mousemove', configState.stories.stories, function (e) {
         if (e.features.length > 0) {
           if (hoveredPolygonId !== null) {
             mapRef.current.setFeatureState({
-              source: configState.stories,
-              sourceLayer: configState.stories,
+              source: configState.stories.stories,
+              sourceLayer: configState.stories.stories,
               id: hoveredPolygonId
             }, {
               hover: false
@@ -1902,19 +1907,19 @@ function Stories(_ref) {
           }
           hoveredPolygonId = e.features[0].id;
           mapRef.current.setFeatureState({
-            source: configState.stories,
-            sourceLayer: configState.stories,
+            source: configState.stories.stories,
+            sourceLayer: configState.stories.stories,
             id: hoveredPolygonId
           }, {
             hover: true
           });
         }
       });
-      mapRef.current.on('mouseleave', configState.stories, function () {
+      mapRef.current.on('mouseleave', configState.stories.stories, function () {
         if (hoveredPolygonId !== null) {
           mapRef.current.setFeatureState({
-            source: configState.stories,
-            sourceLayer: configState.stories,
+            source: configState.stories.stories,
+            sourceLayer: configState.stories.stories,
             id: hoveredPolygonId
           }, {
             hover: false
@@ -1930,9 +1935,10 @@ function Stories(_ref) {
       setStoriesLoaded(true);
       mapRef.current.on('load', addStoryToMap);
     }
-  }, [mapRef.current, configState.stories, username, configState.tileset_prefix, configState.stories_img]);
+  }, [mapRef.current, configState.stories, username, configState.tileset_prefix]);
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
-    if (!mapRef.current || !configState.stories) return;
+    var _configState$stories2;
+    if (!mapRef.current || !((_configState$stories2 = configState.stories) !== null && _configState$stories2 !== void 0 && _configState$stories2.stories)) return;
     var popup = new mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.Popup({
       closeButton: false,
       closeOnClick: false
@@ -1950,18 +1956,18 @@ function Stories(_ref) {
       mapRef.current.getCanvas().style.cursor = '';
       popup.remove();
     };
-    if (mapRef.current.getLayer(configState.stories)) {
-      mapRef.current.on('mouseenter', configState.stories, handleMouseEnter);
-      mapRef.current.on('mouseleave', configState.stories, handleMouseLeave);
+    if (mapRef.current.getLayer(configState.stories.stories)) {
+      mapRef.current.on('mouseenter', configState.stories.stories, handleMouseEnter);
+      mapRef.current.on('mouseleave', configState.stories.stories, handleMouseLeave);
     } else {
       mapRef.current.on('load', function () {
-        mapRef.current.on('mouseenter', configState.stories, handleMouseEnter);
-        mapRef.current.on('mouseleave', configState.stories, handleMouseLeave);
+        mapRef.current.on('mouseenter', configState.stories.stories, handleMouseEnter);
+        mapRef.current.on('mouseleave', configState.stories.stories, handleMouseLeave);
       });
     }
     return function () {
-      mapRef.current.off('mouseenter', configState.stories, handleMouseEnter);
-      mapRef.current.off('mouseleave', configState.stories, handleMouseLeave);
+      mapRef.current.off('mouseenter', configState.stories.stories, handleMouseEnter);
+      mapRef.current.off('mouseleave', configState.stories.stories, handleMouseLeave);
     };
   }, [mapRef.current, configState.stories, configState.lang]);
 }

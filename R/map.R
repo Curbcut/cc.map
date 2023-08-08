@@ -17,6 +17,8 @@
 #' which stories preview is shown.
 #' @param stories <`data.frame`> The stories dataframe. Defaults to NULL if no
 #' stories is to be added to the map.
+#' @param stories_min_zoom <`numeric`> What is the minimum zoom at which the stories
+#' should appear?
 #' @param div_height <`character`> Height of the input. The map will take 100%
 #' of the space. Defaults to the entire viewport (100vh).
 #' @param div_width <`character`> Width of the input. The map will take 100%
@@ -29,8 +31,11 @@
 #'
 #' @export
 map_input <- function(map_ID, username, token, longitude, latitude, zoom, tileset_prefix,
-                      map_style_id, stories = NULL, lang = "en", div_height = "100vh",
+                      map_style_id, stories = NULL, stories_min_zoom = 1, lang = "en", div_height = "100vh",
                       div_width = "100%") {
+
+  if (stories_min_zoom == 0) stop(paste0("`stories_min_zoom` can't be `0`, as ",
+                                         "it means NO zoom level. Use `1` instead."))
 
   div_style <- sprintf("height: %s; width: %s", div_height, div_width)
   div <- function(...) {
@@ -50,8 +55,10 @@ map_input <- function(map_ID, username, token, longitude, latitude, zoom, tilese
 
   # If NULL, no stories added.
   if (!is.null(stories)) {
-    configurations$stories <- sprintf("%s_stories", tileset_prefix)
-    configurations$stories_img <- sapply(stories$img_base64, list) |> jsonlite::toJSON()
+    configurations$stories <- list()
+    configurations$stories$stories <- sprintf("%s_stories", tileset_prefix)
+    configurations$stories$stories_img <- sapply(stories$img_base64, list) |> jsonlite::toJSON()
+    configurations$stories$min_zoom <- stories_min_zoom
   }
 
   reactR::createReactShinyInput(

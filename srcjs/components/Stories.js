@@ -11,43 +11,47 @@ function Stories({ map, configState, username }) {
 	const [storiesLoaded, setStoriesLoaded] = useState(false)
 
 	useEffect(() => {
-		if (!configState.stories || storiesLoaded) return
+		if (!configState.stories?.stories || storiesLoaded) return
 		let hoveredPolygonId = null
 
 		function addStoryToMap() {
-			const url = `mapbox://${username}.${configState.stories}`
+			const url = `mapbox://${username}.${configState.stories.stories}`
+			const stories_img = JSON.parse(configState.stories.stories_img)
+			const stories_min_zoom = configState.stories.min_zoom
+				? configState.stories.min_zoom
+				: 13
 
-			mapRef.current.addSource(configState.stories, {
+			mapRef.current.addSource(configState.stories.stories, {
 				type: 'vector',
 				url: url,
 			})
 
-			Object.entries(configState.stories_img).forEach(
-				([name_id, base64]) => {
-					mapRef.current.loadImage(base64, (error, image) => {
-						if (error) throw error
-						mapRef.current.addImage(name_id, image)
-					})
-				}
-			)
+			Object.entries(stories_img).forEach(([name_id, base64]) => {
+				mapRef.current.loadImage(base64, (error, image) => {
+					if (error) throw error
+					mapRef.current.addImage(name_id, image)
+				})
+			})
 
 			mapRef.current.addLayer({
-				id: configState.stories,
+				id: configState.stories.stories,
 				type: 'symbol',
-				source: configState.stories,
-				'source-layer': configState.stories,
-				minzoom: 13,
+				source: configState.stories.stories,
+				'source-layer': configState.stories.stories,
+				minzoom: stories_min_zoom,
 				maxzoom: 22,
 				layout: {
 					'icon-image': [
 						'match',
 						['get', 'name_id'],
-						...Object.keys(configState.stories_img).flatMap(
-							(name_id) => [name_id, name_id]
-						),
+						...Object.keys(stories_img).flatMap((name_id) => [
+							name_id,
+							name_id,
+						]),
 						'default-image-id',
 					],
 					'icon-size': 0.75,
+					'icon-allow-overlap': true, // Allow symbols to overlap
 				},
 				paint: {
 					'icon-opacity': [
@@ -61,15 +65,15 @@ function Stories({ map, configState, username }) {
 
 			const layers = mapRef.current.getStyle().layers
 			const lastLayer = layers[layers.length - 1].id
-			mapRef.current.moveLayer(configState.stories, lastLayer)
+			mapRef.current.moveLayer(configState.stories.stories, lastLayer)
 
-			mapRef.current.on('mousemove', configState.stories, (e) => {
+			mapRef.current.on('mousemove', configState.stories.stories, (e) => {
 				if (e.features.length > 0) {
 					if (hoveredPolygonId !== null) {
 						mapRef.current.setFeatureState(
 							{
-								source: configState.stories,
-								sourceLayer: configState.stories,
+								source: configState.stories.stories,
+								sourceLayer: configState.stories.stories,
 								id: hoveredPolygonId,
 							},
 							{ hover: false }
@@ -78,8 +82,8 @@ function Stories({ map, configState, username }) {
 					hoveredPolygonId = e.features[0].id
 					mapRef.current.setFeatureState(
 						{
-							source: configState.stories,
-							sourceLayer: configState.stories,
+							source: configState.stories.stories,
+							sourceLayer: configState.stories.stories,
 							id: hoveredPolygonId,
 						},
 						{ hover: true }
@@ -87,12 +91,12 @@ function Stories({ map, configState, username }) {
 				}
 			})
 
-			mapRef.current.on('mouseleave', configState.stories, () => {
+			mapRef.current.on('mouseleave', configState.stories.stories, () => {
 				if (hoveredPolygonId !== null) {
 					mapRef.current.setFeatureState(
 						{
-							source: configState.stories,
-							sourceLayer: configState.stories,
+							source: configState.stories.stories,
+							sourceLayer: configState.stories.stories,
 							id: hoveredPolygonId,
 						},
 						{ hover: false }
@@ -114,11 +118,10 @@ function Stories({ map, configState, username }) {
 		configState.stories,
 		username,
 		configState.tileset_prefix,
-		configState.stories_img,
 	])
 
 	useEffect(() => {
-		if (!mapRef.current || !configState.stories) return
+		if (!mapRef.current || !configState.stories?.stories) return
 
 		const popup = new mapboxgl.Popup({
 			closeButton: false,
@@ -144,27 +147,27 @@ function Stories({ map, configState, username }) {
 			popup.remove()
 		}
 
-		if (mapRef.current.getLayer(configState.stories)) {
+		if (mapRef.current.getLayer(configState.stories.stories)) {
 			mapRef.current.on(
 				'mouseenter',
-				configState.stories,
+				configState.stories.stories,
 				handleMouseEnter
 			)
 			mapRef.current.on(
 				'mouseleave',
-				configState.stories,
+				configState.stories.stories,
 				handleMouseLeave
 			)
 		} else {
 			mapRef.current.on('load', () => {
 				mapRef.current.on(
 					'mouseenter',
-					configState.stories,
+					configState.stories.stories,
 					handleMouseEnter
 				)
 				mapRef.current.on(
 					'mouseleave',
-					configState.stories,
+					configState.stories.stories,
 					handleMouseLeave
 				)
 			})
@@ -173,12 +176,12 @@ function Stories({ map, configState, username }) {
 		return () => {
 			mapRef.current.off(
 				'mouseenter',
-				configState.stories,
+				configState.stories.stories,
 				handleMouseEnter
 			)
 			mapRef.current.off(
 				'mouseleave',
-				configState.stories,
+				configState.stories.stories,
 				handleMouseLeave
 			)
 		}

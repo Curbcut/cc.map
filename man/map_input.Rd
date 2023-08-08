@@ -14,6 +14,7 @@ map_input(
   tileset_prefix,
   map_style_id,
   stories = NULL,
+  stories_min_zoom = 1,
   lang = "en",
   div_height = "100vh",
   div_width = "100\%"
@@ -40,6 +41,9 @@ This will be used only for the stories tileset.}
 
 \item{stories}{<\code{data.frame}> The stories dataframe. Defaults to NULL if no
 stories is to be added to the map.}
+
+\item{stories_min_zoom}{<\code{numeric}> What is the minimum zoom at which the stories
+should appear?}
 
 \item{lang}{<\code{character}> Default language of the app. This will inform
 which stories preview is shown.}
