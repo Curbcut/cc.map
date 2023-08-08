@@ -2125,11 +2125,12 @@ function Map(_ref) {
   // Create the map object only once, without warnings (using the refs).
 
   Object(react__WEBPACK_IMPORTED_MODULE_2__["useEffect"])(function () {
+    console.log(longitudeRef.current);
     map.current = new mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.Map({
       container: mapContainer.current,
       style: configState.style,
-      center: [longitudeRef.current, latitudeRef.current],
-      zoom: zoomRef.current
+      center: [Number(longitudeRef.current), Number(latitudeRef.current)],
+      zoom: Number(zoomRef.current)
     });
     map.current.addControl(new mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.NavigationControl(), 'bottom-right');
     var resizeObserver = new ResizeObserver(function () {

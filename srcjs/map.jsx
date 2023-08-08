@@ -111,11 +111,12 @@ function Map({ configuration, value, setValue }) {
 	// Create the map object only once, without warnings (using the refs).
 
 	useEffect(() => {
+		console.log(longitudeRef.current)
 		map.current = new mapboxgl.Map({
 			container: mapContainer.current,
 			style: configState.style,
-			center: [longitudeRef.current, latitudeRef.current],
-			zoom: zoomRef.current,
+			center: [Number(longitudeRef.current), Number(latitudeRef.current)],
+			zoom: Number(zoomRef.current),
 		})
 
 		map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right')
