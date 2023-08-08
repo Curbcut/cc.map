@@ -15,7 +15,6 @@ function Stories({ map, configState, username }) {
 		let hoveredPolygonId = null
 
 		function addStoryToMap() {
-			console.log('trigg')
 			const url = `mapbox://${username}.${configState.stories}`
 
 			mapRef.current.addSource(configState.stories, {

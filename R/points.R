@@ -32,7 +32,7 @@
 #' @export
 map_heatmap <- function(session, map_ID, tileset,
                         radius = list("interpolate", list("linear"),
-                                      list("zoom"), 0, 1, 10, 8, 12, 10, 15, 30),
+                                      list("zoom"), 0, 1, 10, 3, 12, 10, 15, 30),
                         filter = list("all"), pickable = FALSE) {
 
   # Create an empty configuration list
@@ -81,6 +81,44 @@ map_heatmap_update_filter <- function(session, map_ID, filter) {
   # Send the configuration list to the server
   update_map(session = session, map_ID = map_ID, configuration = configuration)
 }
+
+#' Update the radius of a heatmap layer on a map
+#'
+#' This function updates the radius of a heatmap layer on a map. It generates a
+#' configuration list that includes the new radius for the heatmap data and sends
+#' this configuration to the server to update the map.
+#'
+#' @param session <`shiny::session`> The Shiny session object.
+#' @param map_ID <`character`> A unique identifier for the map input.
+#' @param radius <`numeric or list`> A numeric value specifying the radius for heatmap data,
+#' defining the size of the heatmap's circles. It can be customized to create
+#' specific visual effects. Instead, it can also be the  definition of radius
+#' based on the zoom level. A nested list including 'interpolate', 'linear', zoom levels and
+#' corresponding radius values. It defaults to a list that specifies the
+#' radius at different zoom levels. It is a list defining the radius of influence
+#' of data points in pixels. It is structured as an interpolation expression
+#' following Mapbox's style specification, and it allows the radius to change
+#' according to the zoom level of the map. The default values are set such
+#' that the radius is 1 at zoom level 0, 8 at zoom level 10, and 30 at zoom
+#' level 15. You can adjust these values according to your needs.
+#'
+#' @return No return value. The function sends an update message to the Shiny
+#' server to update the map.
+#'
+#' @export
+map_heatmap_update_radius <- function(session, map_ID, radius) {
+
+  # Create an empty configuration list
+  configuration <- list()
+  configuration$heatmap <- list()
+
+  # Change the radius of the heatmap tileset on the map
+  configuration$heatmap$radius <- jsonlite::toJSON(radius, auto_unbox = T)
+
+  # Send the configuration list to the server
+  update_map(session = session, map_ID = map_ID, configuration = configuration)
+}
+
 
 #' Remove a heatmap layer from a map
 #'

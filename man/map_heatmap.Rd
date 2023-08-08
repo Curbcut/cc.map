@@ -8,7 +8,7 @@ map_heatmap(
   session,
   map_ID,
   tileset,
-  radius = list("interpolate", list("linear"), list("zoom"), 0, 1, 10, 8, 12, 10, 15, 30),
+  radius = list("interpolate", list("linear"), list("zoom"), 0, 1, 10, 3, 12, 10, 15, 30),
   filter = list("all"),
   pickable = FALSE
 )

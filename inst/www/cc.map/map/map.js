@@ -1086,10 +1086,10 @@ function MapTile(_ref) {
           maxzoom: sourceLayer.maxzoom,
           layout: {},
           paint: {
-            'line-color': ['case', ['boolean', ['feature-state', 'click'], false], '#000000', layerId.includes('building') ? 'lightgrey' : 'transparent'],
+            'line-color': ['case', ['boolean', ['feature-state', 'click'], false], '#000000', layerId.includes('building') ? 'lightgrey' : configState.choropleth.outline_color ? configState.choropleth.outline_color : 'transparent'],
             'line-width': ['case', ['boolean', ['feature-state', 'click'], false], 3,
             // Change this value to adjust the thickness
-            1]
+            configState.choropleth.outline_width ? configState.choropleth.outline_width : 1]
           }
         });
 
@@ -1262,6 +1262,7 @@ function BuildingStyle(_ref) {
 
   // React hook to manage building layer
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
+    if (!sourceLayers.vector_layers) return;
     if (sourceLayers.vector_layers.length === 0) return;
     var layers = mapRef.current.getStyle().layers;
     var buildingLayer = layers.find(function (layer) {
@@ -1628,7 +1629,7 @@ function PointTile(_ref) {
           type: 'circle',
           source: layerId,
           'source-layer': sourceLayer.id,
-          minzoom: sourceLayer.minzoom,
+          minzoom: 13,
           maxzoom: sourceLayer.maxzoom,
           paint: {
             // Increase the radius of the circle as the zoom level and dbh value increases
@@ -1854,7 +1855,6 @@ function Stories(_ref) {
     if (!configState.stories || storiesLoaded) return;
     var hoveredPolygonId = null;
     function addStoryToMap() {
-      console.log('trigg');
       var url = "mapbox://".concat(username, ".").concat(configState.stories);
       mapRef.current.addSource(configState.stories, {
         type: 'vector',

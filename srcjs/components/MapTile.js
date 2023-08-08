@@ -122,13 +122,17 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 							'#000000',
 							layerId.includes('building')
 								? 'lightgrey'
+								: configState.choropleth.outline_color
+								? configState.choropleth.outline_color
 								: 'transparent',
 						],
 						'line-width': [
 							'case',
 							['boolean', ['feature-state', 'click'], false],
 							3, // Change this value to adjust the thickness
-							1,
+							configState.choropleth.outline_width
+								? configState.choropleth.outline_width
+								: 1,
 						],
 					},
 				})

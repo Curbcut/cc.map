@@ -26,6 +26,7 @@ function BuildingStyle({ sourceLayers, map }) {
 
 	// React hook to manage building layer
 	useEffect(() => {
+		if (!sourceLayers.vector_layers) return
 		if (sourceLayers.vector_layers.length === 0) return
 
 		const layers = mapRef.current.getStyle().layers

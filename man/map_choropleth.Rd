@@ -9,11 +9,13 @@ map_choropleth(
   map_ID,
   tileset,
   fill_colour,
+  outline_width = 1,
+  outline_color = "transparent",
   pickable = TRUE,
   select_id = NA,
   fill_fun = map_choropleth_fill_fun,
   fill_fun_args = list(df = fill_colour, get_col = names(fill_colour)[1], fallback =
-    "transparent")
+    "#B3B3BB")
 )
 }
 \arguments{
@@ -25,6 +27,13 @@ map_choropleth(
 
 \item{fill_colour}{<\code{data.frame}> A tibble with two columns: 'ID_color' and 'fill'. ID is
 the ID of the feature, and fill are hexes of 6 digits.}
+
+\item{outline_width}{<\code{numeric}> Outline width of the fill features. Default
+to 1.}
+
+\item{outline_color}{<\code{numeric}> Outline color of the fill features. Defaults
+to \code{"transparent"}. It can be a color or a JSON object representing the line-color
+mapping.}
 
 \item{pickable}{<\code{logical}> Should there be hovered effect, indicating the layer
 can be pickable? Defaults to TRUE.}

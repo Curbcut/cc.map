@@ -113,7 +113,7 @@ function PointTile({ map, configState, username, token }) {
 						type: 'circle',
 						source: layerId,
 						'source-layer': sourceLayer.id,
-						minzoom: sourceLayer.minzoom,
+						minzoom: 13,
 						maxzoom: sourceLayer.maxzoom,
 						paint: {
 							// Increase the radius of the circle as the zoom level and dbh value increases

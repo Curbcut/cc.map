@@ -9,6 +9,11 @@
 #' @param tileset <`character`> The tileset to be used for the choropleth overlay.
 #' @param fill_colour <`data.frame`> A tibble with two columns: 'ID_color' and 'fill'. ID is
 #' the ID of the feature, and fill are hexes of 6 digits.
+#' @param outline_width <`numeric`> Outline width of the fill features. Default
+#' to 1.
+#' @param outline_color <`numeric`> Outline color of the fill features. Defaults
+#' to `"transparent"`. It can be a color or a JSON object representing the line-color
+#' mapping.
 #' @param pickable <`logical`> Should there be hovered effect, indicating the layer
 #' can be pickable? Defaults to TRUE.
 #' @param select_id <`character`> The selected ID that should be highlighted on
@@ -23,11 +28,13 @@
 #' server to update the map.
 #'
 #' @export
-map_choropleth <- function(session, map_ID, tileset, fill_colour, pickable = TRUE,
-                           select_id = NA, fill_fun = map_choropleth_fill_fun,
+map_choropleth <- function(session, map_ID, tileset, fill_colour, outline_width = 1,
+                           outline_color = "transparent",
+                           pickable = TRUE, select_id = NA,
+                           fill_fun = map_choropleth_fill_fun,
                            fill_fun_args = list(df = fill_colour,
                                                 get_col = names(fill_colour)[1],
-                                                fallback = "transparent")) {
+                                                fallback = "#B3B3BB")) {
 
   # Create an empty configuration list
   configuration <- list()
@@ -35,6 +42,12 @@ map_choropleth <- function(session, map_ID, tileset, fill_colour, pickable = TRU
 
   # Add the fill colour to the configuration list and transfer it to JSON
   configuration$choropleth$fill_colour <- do.call(fill_fun, fill_fun_args)
+
+  # Update the outline width of the fill
+  configuration$choropleth$outline_width <- outline_width
+
+  # Update the outline color of the fill
+  configuration$choropleth$outline_color <- outline_color
 
   # Add the tileset to the configuration list
   configuration$choropleth$tileset <- tileset
