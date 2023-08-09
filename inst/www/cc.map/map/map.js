@@ -2025,6 +2025,7 @@ function Map(_ref) {
   var configuration = _ref.configuration,
     value = _ref.value,
     setValue = _ref.setValue;
+  console.log(configuration);
   // Set configState
   var _useState = Object(react__WEBPACK_IMPORTED_MODULE_2__["useState"])(function () {
       var state = Object.fromEntries(Object.entries(configuration).map(function (_ref2) {
