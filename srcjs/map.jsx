@@ -10,7 +10,6 @@ import Stories from './components/Stories'
 import PointTile from './components/PointTile'
 
 function Map({ configuration, value, setValue }) {
-	console.log(configuration)
 	// Set configState
 	const [configState, setConfigState] = useState(() => {
 		let state = Object.fromEntries(
@@ -112,7 +111,6 @@ function Map({ configuration, value, setValue }) {
 	// Create the map object only once, without warnings (using the refs).
 
 	useEffect(() => {
-		console.log(longitudeRef.current)
 		map.current = new mapboxgl.Map({
 			container: mapContainer.current,
 			style: configState.style,

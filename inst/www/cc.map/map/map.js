@@ -2025,7 +2025,6 @@ function Map(_ref) {
   var configuration = _ref.configuration,
     value = _ref.value,
     setValue = _ref.setValue;
-  console.log(configuration);
   // Set configState
   var _useState = Object(react__WEBPACK_IMPORTED_MODULE_2__["useState"])(function () {
       var state = Object.fromEntries(Object.entries(configuration).map(function (_ref2) {
@@ -2126,7 +2125,6 @@ function Map(_ref) {
   // Create the map object only once, without warnings (using the refs).
 
   Object(react__WEBPACK_IMPORTED_MODULE_2__["useEffect"])(function () {
-    console.log(longitudeRef.current);
     map.current = new mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.Map({
       container: mapContainer.current,
       style: configState.style,
