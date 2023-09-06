@@ -10,7 +10,8 @@ map_heatmap(
   tileset,
   radius = list("interpolate", list("linear"), list("zoom"), 0, 1, 10, 3, 12, 10, 15, 30),
   filter = list("all"),
-  pickable = FALSE
+  pickable = FALSE,
+  colours
 )
 }
 \arguments{

@@ -23,8 +23,10 @@
 #' subsets of the data. For the `crash` data in Montreal, tileset have a `ped`
 #' and `cyc` column including a boolean. To only filter pedestrian, this would
 #' be the correct argument: `list("==", list("get", "ped"), TRUE)`
-#' @param pickable <logical> Should there be hovered effect, indicating the
+#' @param pickable <`logical`> Should there be hovered effect, indicating the
 #' layer can be pickable? Defaults to FALSE.
+#' @param colours <`character vector`> Vector of length 5, with rgb or rgba
+#' values.
 #'
 #' @return No return value. The function sends an update message to the Shiny
 #' server to update the map.
@@ -33,7 +35,8 @@
 map_heatmap <- function(session, map_ID, tileset,
                         radius = list("interpolate", list("linear"),
                                       list("zoom"), 0, 1, 10, 3, 12, 10, 15, 30),
-                        filter = list("all"), pickable = FALSE) {
+                        filter = list("all"), pickable = FALSE,
+                        colours) {
 
   # Create an empty configuration list
   configuration <- list()
@@ -44,6 +47,7 @@ map_heatmap <- function(session, map_ID, tileset,
   configuration$heatmap$radius <- jsonlite::toJSON(radius, auto_unbox = T)
   configuration$heatmap$filter <- jsonlite::toJSON(filter, auto_unbox = T)
   configuration$heatmap$pickable <- pickable
+  configuration$heatmap$colours <- colours
 
   # Send the configuration list to the server
   update_map(session = session, map_ID = map_ID, configuration = configuration)

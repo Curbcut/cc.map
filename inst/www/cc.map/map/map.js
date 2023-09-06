@@ -1617,11 +1617,15 @@ function PointTile(_ref) {
             // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
             // Begin color ramp at 0-stop with a 0-transparancy color
             // to create a blur-like effect.
-            'heatmap-color': ['interpolate', ['linear'], ['heatmap-density'], 0, 'rgba(33,102,172,0)', 0.25, 'rgb(203,194,255)', 0.5, 'rgb(251,213,98)', 0.75, 'rgb(238,128,93)', 1, 'rgb(219,106,140)'],
+            'heatmap-color': ['interpolate', ['linear'], ['heatmap-density'], 0, configState.heatmap.colours[0], 0.25, configState.heatmap.colours[1], 0.5, configState.heatmap.colours[2], 0.75, configState.heatmap.colours[3], 1, configState.heatmap.colours[4]],
             // Transition from heatmap to circle layer by zoom level
             'heatmap-opacity': ['interpolate', ['linear'], ['zoom'], 15, 1, 16, 0]
           }
         }, buildingLayerId);
+
+        // Prepare the rgb colours[4] to RGBA (with the alpha)
+        var rgb = configState.heatmap.colours[4];
+        var rgba = rgb.replace('rgb', 'rgba').replace(')', ', 0.5)');
 
         // Add a layer with the points
         mapRef.current.addLayer({
@@ -1634,7 +1638,7 @@ function PointTile(_ref) {
           paint: {
             // Increase the radius of the circle as the zoom level and dbh value increases
             'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 0, 12, 1, 22, 15],
-            'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], 'rgba(219,106,140,1)', 'rgba(219,106,140,0.5)'],
+            'circle-color': ['case', ['boolean', ['feature-state', 'hover'], false], configState.heatmap.colours[4], rgba],
             'circle-stroke-color': 'white',
             'circle-stroke-width': 1,
             'circle-opacity': ['interpolate', ['linear'], ['zoom'], 15, 0, 16, 1]

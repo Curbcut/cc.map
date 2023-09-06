@@ -81,15 +81,15 @@ function PointTile({ map, configState, username, token }) {
 								['linear'],
 								['heatmap-density'],
 								0,
-								'rgba(33,102,172,0)',
+								configState.heatmap.colours[0],
 								0.25,
-								'rgb(203,194,255)',
+								configState.heatmap.colours[1],
 								0.5,
-								'rgb(251,213,98)',
+								configState.heatmap.colours[2],
 								0.75,
-								'rgb(238,128,93)',
+								configState.heatmap.colours[3],
 								1,
-								'rgb(219,106,140)',
+								configState.heatmap.colours[4],
 							],
 							// Transition from heatmap to circle layer by zoom level
 							'heatmap-opacity': [
@@ -105,6 +105,10 @@ function PointTile({ map, configState, username, token }) {
 					},
 					buildingLayerId
 				)
+
+				// Prepare the rgb colours[4] to RGBA (with the alpha)
+				let rgb = configState.heatmap.colours[4]
+				let rgba = rgb.replace('rgb', 'rgba').replace(')', ', 0.5)')
 
 				// Add a layer with the points
 				mapRef.current.addLayer(
@@ -131,8 +135,8 @@ function PointTile({ map, configState, username, token }) {
 							'circle-color': [
 								'case',
 								['boolean', ['feature-state', 'hover'], false],
-								'rgba(219,106,140,1)',
-								'rgba(219,106,140,0.5)',
+								configState.heatmap.colours[4],
+								rgba,
 							],
 							'circle-stroke-color': 'white',
 							'circle-stroke-width': 1,
