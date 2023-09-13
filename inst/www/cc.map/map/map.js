@@ -2029,6 +2029,7 @@ function Map(_ref) {
   var configuration = _ref.configuration,
     value = _ref.value,
     setValue = _ref.setValue;
+  var default_style = 'mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp';
   // Set configState
   var _useState = Object(react__WEBPACK_IMPORTED_MODULE_2__["useState"])(function () {
       var state = Object.fromEntries(Object.entries(configuration).map(function (_ref2) {
@@ -2127,7 +2128,7 @@ function Map(_ref) {
   Object(react__WEBPACK_IMPORTED_MODULE_2__["useEffect"])(function () {
     map.current = new mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.Map({
       container: mapContainer.current,
-      style: configState.style || 'mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp',
+      style: default_style,
       center: [Number(longitudeRef.current), Number(latitudeRef.current)],
       zoom: Number(zoomRef.current)
     });
@@ -2144,9 +2145,10 @@ function Map(_ref) {
 
   // Second useEffect for handling style updates
   Object(react__WEBPACK_IMPORTED_MODULE_2__["useEffect"])(function () {
-    if (configState.style) {
-      map.current.setStyle(configState.style);
-    }
+    if (!map.current) return;
+    if (!configState.style) return;
+    if (configState.style === default_style) return;
+    map.current.setStyle(configState.style);
   }, [configState.style]);
 
   // Third useEffect for handling viewstate updates

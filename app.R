@@ -22,23 +22,32 @@ map_js_UI <- function(id) {
     actionButton(shiny::NS(id, "button6"), "add heatmap"),
     actionButton(shiny::NS(id, "button7"), "change heatmap filter"),
     actionButton(shiny::NS(id, "button8"), "Remove heatmap layer"),
-    cc.map::map_input(
-      shiny::NS(id, "map"),
-      username = "curbcut",
-      token = 'pk.eyJ1IjoiY3VyYmN1dCIsImEiOiJjbGprYnVwOTQwaDAzM2xwaWdjbTB6bzdlIn0.Ks1cOI6v2i8jiIjk38s_kg',
-      map_style_id = "mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp",
-      longitude = -73.5,
-      latitude = 45.5,
-      zoom = 9,
-      tileset_prefix = "mtl",
-      stories = stories,
-      stories_min_zoom = 1)
+    shiny::uiOutput(outputId = shiny::NS(id, "map_ph"))
   )
 }
 
 map_js_server <- function(id) {
 
   shiny::moduleServer(id, function(input, output, session) {
+
+    output$map_ph <- shiny::renderUI({
+      cc.map::map_input(
+        shiny::NS(id, "map"),
+        username = "curbcut",
+        token = 'pk.eyJ1IjoiY3VyYmN1dCIsImEiOiJjbGprYnVwOTQwaDAzM2xwaWdjbTB6bzdlIn0.Ks1cOI6v2i8jiIjk38s_kg',
+        map_style_id = "mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp",
+        longitude = -73.5,
+        latitude = 45.5,
+        zoom = 9,
+        tileset_prefix = "mtl",
+        stories = stories,
+        stories_min_zoom = 13)
+    })
+    map_choropleth(session = session, map_ID = "map",
+                   tileset = "mtl_CMA_auto_zoom",
+                   fill_colour = fill_colour,
+                   select_id = "2466023_4")
+
 
     # Observe change in viewstate. ignore NULL as it gets triggered everytime an
     # output is sent from the map to shiny

@@ -10,6 +10,7 @@ import Stories from './components/Stories'
 import PointTile from './components/PointTile'
 
 function Map({ configuration, value, setValue }) {
+	const default_style = 'mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp'
 	// Set configState
 	const [configState, setConfigState] = useState(() => {
 		let state = Object.fromEntries(
@@ -109,9 +110,7 @@ function Map({ configuration, value, setValue }) {
 	useEffect(() => {
 		map.current = new mapboxgl.Map({
 			container: mapContainer.current,
-			style:
-				configState.style ||
-				'mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp',
+			style: default_style,
 			center: [Number(longitudeRef.current), Number(latitudeRef.current)],
 			zoom: Number(zoomRef.current),
 		})
@@ -132,9 +131,10 @@ function Map({ configuration, value, setValue }) {
 
 	// Second useEffect for handling style updates
 	useEffect(() => {
-		if (configState.style) {
-			map.current.setStyle(configState.style)
-		}
+		if (!map.current) return
+		if (!configState.style) return
+		if (configState.style === default_style) return
+		map.current.setStyle(configState.style)
 	}, [configState.style])
 
 	// Third useEffect for handling viewstate updates
