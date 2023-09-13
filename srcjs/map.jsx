@@ -91,11 +91,6 @@ function Map({ configuration, value, setValue }) {
 		mapID: [],
 	})
 
-	// // Inform in console when value changes
-	// useEffect(() => {
-	// 	console.log(value)
-	// }, [value])
-
 	// Save the initial map center and zoom. We'll use these to create the map object
 	// only once, without warnings.
 	const latitudeRef = useRef(configState.viewstate.latitude)
