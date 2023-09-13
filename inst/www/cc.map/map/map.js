@@ -2109,11 +2109,6 @@ function Map(_ref) {
     click = _useState4[0],
     setClick = _useState4[1];
 
-  // // Inform in console when value changes
-  // useEffect(() => {
-  // 	console.log(value)
-  // }, [value])
-
   // Save the initial map center and zoom. We'll use these to create the map object
   // only once, without warnings.
   var latitudeRef = Object(react__WEBPACK_IMPORTED_MODULE_2__["useRef"])(configState.viewstate.latitude);
@@ -2128,10 +2123,11 @@ function Map(_ref) {
   }, [configState.viewstate]);
   // Create the map object only once, without warnings (using the refs).
 
+  // First useEffect for map initialization
   Object(react__WEBPACK_IMPORTED_MODULE_2__["useEffect"])(function () {
     map.current = new mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.Map({
       container: mapContainer.current,
-      style: configState.style,
+      style: configState.style || 'mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp',
       center: [Number(longitudeRef.current), Number(latitudeRef.current)],
       zoom: Number(zoomRef.current)
     });
@@ -2144,7 +2140,16 @@ function Map(_ref) {
       map.current.remove();
       resizeObserver.disconnect();
     };
+  }, []);
+
+  // Second useEffect for handling style updates
+  Object(react__WEBPACK_IMPORTED_MODULE_2__["useEffect"])(function () {
+    if (configState.style) {
+      map.current.setStyle(configState.style);
+    }
   }, [configState.style]);
+
+  // Third useEffect for handling viewstate updates
   Object(react__WEBPACK_IMPORTED_MODULE_2__["useEffect"])(function () {
     if (!map.current) return;
 

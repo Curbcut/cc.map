@@ -105,10 +105,13 @@ function Map({ configuration, value, setValue }) {
 	}, [configState.viewstate])
 	// Create the map object only once, without warnings (using the refs).
 
+	// First useEffect for map initialization
 	useEffect(() => {
 		map.current = new mapboxgl.Map({
 			container: mapContainer.current,
-			style: configState.style,
+			style:
+				configState.style ||
+				'mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp',
 			center: [Number(longitudeRef.current), Number(latitudeRef.current)],
 			zoom: Number(zoomRef.current),
 		})
@@ -125,8 +128,16 @@ function Map({ configuration, value, setValue }) {
 			map.current.remove()
 			resizeObserver.disconnect()
 		}
+	}, [])
+
+	// Second useEffect for handling style updates
+	useEffect(() => {
+		if (configState.style) {
+			map.current.setStyle(configState.style)
+		}
 	}, [configState.style])
 
+	// Third useEffect for handling viewstate updates
 	useEffect(() => {
 		if (!map.current) return
 

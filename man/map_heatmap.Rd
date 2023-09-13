@@ -39,8 +39,11 @@ subsets of the data. For the \code{crash} data in Montreal, tileset have a \code
 and \code{cyc} column including a boolean. To only filter pedestrian, this would
 be the correct argument: \code{list("==", list("get", "ped"), TRUE)}}
 
-\item{pickable}{\if{html}{\out{<logical>}} Should there be hovered effect, indicating the
+\item{pickable}{<\code{logical}> Should there be hovered effect, indicating the
 layer can be pickable? Defaults to FALSE.}
+
+\item{colours}{<\verb{character vector}> Vector of length 5, with rgb or rgba
+values.}
 }
 \value{
 No return value. The function sends an update message to the Shiny
