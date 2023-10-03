@@ -1048,6 +1048,7 @@ function MapTile(_ref) {
       // Add the source layers to the map
       (_sourceLayers$vector_ = sourceLayers.vector_layers) === null || _sourceLayers$vector_ === void 0 ? void 0 : _sourceLayers$vector_.forEach(function (sourceLayer) {
         var layerId = sourceLayer.id;
+        console.log("Addition: ".concat(layerId));
         setLayerIds(function (prevLayerIds) {
           return {
             layerIds: [].concat(_toConsumableArray(prevLayerIds.layerIds), [layerId]),
@@ -1152,6 +1153,7 @@ function MapTile(_ref) {
 
       currentLayerIds.forEach(function (layerId) {
         if (mapRef.current.getLayer(layerId)) {
+          console.log("Removal: ".concat(layerId));
           mapRef.current.off('mousemove', layerId);
           mapRef.current.off('mouseleave', layerId);
           mapRef.current.removeLayer(layerId + '-outline');

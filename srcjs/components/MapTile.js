@@ -72,6 +72,9 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 			// Add the source layers to the map
 			sourceLayers.vector_layers?.forEach((sourceLayer) => {
 				const layerId = sourceLayer.id
+
+				console.log(`Addition: ${layerId}`)
+
 				setLayerIds((prevLayerIds) => ({
 					layerIds: [...prevLayerIds.layerIds, layerId],
 					allLoaded: false,
@@ -197,6 +200,7 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 
 			currentLayerIds.forEach((layerId) => {
 				if (mapRef.current.getLayer(layerId)) {
+					console.log(`Removal: ${layerId}`)
 					mapRef.current.off('mousemove', layerId)
 					mapRef.current.off('mouseleave', layerId)
 					mapRef.current.removeLayer(layerId + '-outline')
