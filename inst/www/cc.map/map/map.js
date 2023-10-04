@@ -1003,6 +1003,14 @@ function MapTile(_ref) {
     return configState.choropleth ? String(configState.choropleth.select_id) : null;
   }, [configState.choropleth]);
 
+  // Force a map redrawn. Sometimes, at init, the tilesets are not drawn correctly.
+  // From a call within Shiny, this will force the tileset to be redrawn.
+  var redraw_map = Object(react__WEBPACK_IMPORTED_MODULE_0__["useMemo"])(function () {
+    if (!configState.choropleth) return null;
+    if (!configState.choropleth.redraw) return null;
+    return configState.choropleth ? String(configState.choropleth.redraw) : null;
+  }, [configState.choropleth]);
+
   // When the choropleth is initiated with a select_id, update click
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     if (!select_id) return;
@@ -1035,6 +1043,12 @@ function MapTile(_ref) {
     _useState6 = _slicedToArray(_useState5, 2),
     layerIds = _useState6[0],
     setLayerIds = _useState6[1];
+
+  // See if we need to re-trigger the tileset loading
+  var _useState7 = Object(react__WEBPACK_IMPORTED_MODULE_0__["useState"])(false),
+    _useState8 = _slicedToArray(_useState7, 2),
+    triggerReload = _useState8[0],
+    setTriggerReload = _useState8[1];
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     var handleLoad = function handleLoad() {
       var _sourceLayers$vector_;
@@ -1182,7 +1196,34 @@ function MapTile(_ref) {
       mapRef.current.off('load');
       removeLayers(); // Remove existing layers
     };
-  }, [sourceLayers, pickable, select_id]);
+  }, [sourceLayers, pickable, select_id, triggerReload]);
+
+  // If redraw_map changes, look to see if the expected sourceLayers.vector_layers are
+  // loaded. If not, then reload the sourceLayers and trigger the effect again by using
+  // redraw_map.
+  Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
+    if (!redraw_map) return;
+    var areSourceLayersLoaded = sourceLayers.vector_layers.every(function (sourceLayer) {
+      // If the layer is not loaded, then mapRef.current.getLayer(sourceLayer.id) will return undefined
+      var out_list = mapRef.current.getLayer(sourceLayer.id);
+
+      // If it returns undefined, then the layer is not loaded
+      if (!out_list) {
+        console.log("Layer ".concat(sourceLayer.id, " is not loaded"));
+        return false;
+      } else {
+        console.log("Layer ".concat(sourceLayer.id, " is loaded"));
+        return true;
+      }
+    });
+    console.log('Are all source layers loaded: ' + areSourceLayersLoaded);
+    if (!areSourceLayersLoaded) {
+      setTriggerReload(function (prev) {
+        return !prev;
+      }); // Toggle the state to re-trigger the first hook
+      console.log("triggerReload: ".concat(triggerReload));
+    }
+  }, [redraw_map, setTriggerReload]);
 
   // Deal with polygons selected at init
   Object(_MapTile_SelectId__WEBPACK_IMPORTED_MODULE_5__["default"])({

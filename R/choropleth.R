@@ -134,12 +134,9 @@ map_choropleth_update_selection <- function(session, map_ID, select_id) {
   update_map(session = session, map_ID = map_ID, configuration = configuration)
 }
 
-#' Update a map's selection
+#' Remove tileset
 #'
-#' This function updates a map's selection. It generates a configuration list
-#' that includes the selection and a timestamp to ensure changes are recognized
-#' each time it's updated. This configuration is sent to the server to update
-#' the map.
+#' This function removes the tileset.
 #'
 #' @param session <`shiny::session`> The Shiny session object.
 #' @param map_ID <`character`> A unique identifier for the map input.
@@ -157,6 +154,32 @@ map_choropleth_remove <- function(session, map_ID) {
   # Send a 'remove' character. This will ensure the removal of the choropleth
   # map.
   configuration$choropleth$tileset <- "remove"
+
+  # Send the configuration list to the server
+  update_map(session = session, map_ID = map_ID, configuration = configuration)
+}
+
+#' Redraw the tileset
+#'
+#' If we are under the impression that the map did not draw correctly, force a
+#' redraw of the tileset. First, we are looking at if the tilesets are currently
+#' loaded on the map. Only if there are not, will we trigger a redraw.
+#'
+#' @param session <`shiny::session`> The Shiny session object.
+#' @param map_ID <`character`> A unique identifier for the map input.
+#'
+#' @return No return value. The function sends an update message to the Shiny
+#' server to update the map.
+#'
+#' @export
+map_choropleth_redraw <- function(session, map_ID) {
+
+  # Create an empty configuration list
+  configuration <- list()
+  configuration$choropleth <- list()
+
+  # Send a 'redraw' character. This will ensure the redrawal of the tileset
+  configuration$choropleth$redraw <- unname(proc.time()[3])*100
 
   # Send the configuration list to the server
   update_map(session = session, map_ID = map_ID, configuration = configuration)
