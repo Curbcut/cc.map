@@ -1306,8 +1306,10 @@ function BuildingStyle(_ref) {
 
   // React hook to manage building layer
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
+    if (!mapRef.current) return;
     if (!sourceLayers.vector_layers) return;
     if (sourceLayers.vector_layers.length === 0) return;
+    if (!mapRef.current.isStyleLoaded()) return;
     var layers = mapRef.current.getStyle().layers;
     var buildingLayer = layers.find(function (layer) {
       return layer.type === 'fill' && layer.id === 'building';
@@ -2170,13 +2172,18 @@ function Map(_ref) {
 
   // First useEffect for map initialization
   Object(react__WEBPACK_IMPORTED_MODULE_2__["useEffect"])(function () {
+    console.log("latitude: ".concat(latitudeRef.current));
     map.current = new mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.Map({
       container: mapContainer.current,
       style: default_style,
       center: [Number(longitudeRef.current), Number(latitudeRef.current)],
       zoom: Number(zoomRef.current)
     });
-    map.current.addControl(new mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.NavigationControl(), 'bottom-right');
+
+    // Wait until the map is loaded before adding any controls or performing any other operations
+    map.current.on('load', function () {
+      map.current.addControl(new mapbox_gl__WEBPACK_IMPORTED_MODULE_1___default.a.NavigationControl(), 'bottom-right');
+    });
     var resizeObserver = new ResizeObserver(function () {
       map.current.resize();
     });

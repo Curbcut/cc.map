@@ -108,6 +108,8 @@ function Map({ configuration, value, setValue }) {
 
 	// First useEffect for map initialization
 	useEffect(() => {
+		console.log(`latitude: ${latitudeRef.current}`)
+
 		map.current = new mapboxgl.Map({
 			container: mapContainer.current,
 			style: default_style,
@@ -115,7 +117,13 @@ function Map({ configuration, value, setValue }) {
 			zoom: Number(zoomRef.current),
 		})
 
-		map.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right')
+		// Wait until the map is loaded before adding any controls or performing any other operations
+		map.current.on('load', () => {
+			map.current.addControl(
+				new mapboxgl.NavigationControl(),
+				'bottom-right'
+			)
+		})
 
 		const resizeObserver = new ResizeObserver(() => {
 			map.current.resize()
