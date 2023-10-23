@@ -15,7 +15,7 @@ map_choropleth(
   select_id = NA,
   fill_fun = map_choropleth_fill_fun,
   fill_fun_args = list(df = fill_colour, get_col = names(fill_colour)[1], fallback =
-    "#B3B3BB")
+    "transparent")
 )
 }
 \arguments{
