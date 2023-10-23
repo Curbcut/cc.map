@@ -34,7 +34,7 @@ map_choropleth <- function(session, map_ID, tileset, fill_colour, outline_width 
                            fill_fun = map_choropleth_fill_fun,
                            fill_fun_args = list(df = fill_colour,
                                                 get_col = names(fill_colour)[1],
-                                                fallback = "#B3B3BB")) {
+                                                fallback = "transparent")) {
 
   # Create an empty configuration list
   configuration <- list()

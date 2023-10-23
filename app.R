@@ -4,7 +4,7 @@ devtools::load_all()
 
 # Fill data ---------------------------------------------------------------
 
-fill_colour <- qs::qread(system.file("data_colour.qs", package = "cc.map"))
+fill_colour <- qs::qread(system.file("data_colour.qs", package = "cc.map"))[1:20,]
 names(fill_colour)[1] <- "ID_color"
 stories <- qs::qread(system.file("stories.qs", package = "cc.map"))
 stories <- tibble::as_tibble(stories)
