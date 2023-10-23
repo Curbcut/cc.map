@@ -907,13 +907,13 @@ function LayerJson(_ref) {
     tileset = _ref.tileset,
     token = _ref.token;
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
-    if (!tileset) return null;
+    if (!tileset) return;
     if (tileset === 'remove') {
       setSourceLayers({
         vector_layers: [],
         url: ''
       });
-      return null;
+      return;
     }
     var layerUrl = "https://api.mapbox.com/v4/".concat(username, ".").concat(tileset, ".json?secure&access_token=").concat(token);
     fetch(layerUrl).then(function (response) {
@@ -1361,7 +1361,7 @@ function FillColour(_ref) {
   // React hook to manage change of map styling for the fill colour
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     var _layerIds$layerIds;
-    if (!mapRef.current || !layerIds.allLoaded) return null;
+    if (!mapRef.current || !layerIds.allLoaded) return;
     (_layerIds$layerIds = layerIds.layerIds) === null || _layerIds$layerIds === void 0 ? void 0 : _layerIds$layerIds.forEach(function (layerId) {
       mapRef.current.setPaintProperty(layerId, 'fill-color', styleFunction);
       mapRef.current.setPaintProperty(layerId, 'fill-outline-color', styleFunction);
@@ -1402,7 +1402,7 @@ function HandleClickStyle(_ref) {
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     var _layerIds$layerIds;
     // ensure the map object is initialized
-    if (!mapRef.current || !mapRef.current.isStyleLoaded() || !configState.choropleth || !configState.choropleth.pickable) return null;
+    if (!mapRef.current || !mapRef.current.isStyleLoaded() || !configState.choropleth || !configState.choropleth.pickable) return;
 
     // Reset the 'click' state of the previously clicked polygon
     if (clickedPolygonId !== null) {

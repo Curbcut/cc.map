@@ -62,10 +62,10 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 	})
 	// Get the source layers in the active tileset
 	LayerJson({
-		setSourceLayers,
-		username,
+		setSourceLayers: setSourceLayers,
+		username: username,
 		tileset: tileset,
-		token,
+		token: token,
 	})
 
 	// Keep current loaded layer IDs

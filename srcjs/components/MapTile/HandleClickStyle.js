@@ -24,7 +24,7 @@ function HandleClickStyle({
 			!configState.choropleth ||
 			!configState.choropleth.pickable
 		)
-			return null
+			return
 
 		// Reset the 'click' state of the previously clicked polygon
 		if (clickedPolygonId !== null) {

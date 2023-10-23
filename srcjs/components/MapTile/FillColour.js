@@ -18,7 +18,7 @@ function FillColour({ configState, map, layerIds }) {
 
 	// React hook to manage change of map styling for the fill colour
 	useEffect(() => {
-		if (!mapRef.current || !layerIds.allLoaded) return null
+		if (!mapRef.current || !layerIds.allLoaded) return
 
 		layerIds.layerIds?.forEach((layerId) => {
 			mapRef.current.setPaintProperty(

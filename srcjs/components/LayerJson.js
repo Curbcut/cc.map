@@ -2,10 +2,10 @@ import { useEffect } from 'react'
 
 function LayerJson({ setSourceLayers, username, tileset, token }) {
 	useEffect(() => {
-		if (!tileset) return null
+		if (!tileset) return
 		if (tileset === 'remove') {
 			setSourceLayers({ vector_layers: [], url: '' })
-			return null
+			return
 		}
 
 		const layerUrl = `https://api.mapbox.com/v4/${username}.${tileset}.json?secure&access_token=${token}`
