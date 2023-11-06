@@ -1819,7 +1819,7 @@ function HandleFilter(_ref) {
   }, [map]);
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     var _layerIds$layerIds;
-    if (!mapRef.current || !configState.heatmap || !configState.heatmap.filter) return;
+    if (!mapRef.current || !configState.heatmap || !configState.heatmap.filter) return null;
     (_layerIds$layerIds = layerIds.layerIds) === null || _layerIds$layerIds === void 0 ? void 0 : _layerIds$layerIds.forEach(function (layerId) {
       mapRef.current.setFilter(layerId, configState.heatmap.filter);
       mapRef.current.setFilter(layerId + '-point', configState.heatmap.filter);
@@ -1853,7 +1853,7 @@ function HandleRadius(_ref) {
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     var _layerIds$layerIds;
     if (!mapRef.current || !configState.heatmap || !configState.heatmap.radius) {
-      return;
+      return null;
     }
     (_layerIds$layerIds = layerIds.layerIds) === null || _layerIds$layerIds === void 0 ? void 0 : _layerIds$layerIds.forEach(function (layerId) {
       mapRef.current.setPaintProperty(layerId, 'heatmap-radius', configState.heatmap.radius);

@@ -12,7 +12,7 @@ function HandleFilter({ map, configState, layerIds }) {
 			!configState.heatmap ||
 			!configState.heatmap.filter
 		)
-			return
+			return null
 
 		layerIds.layerIds?.forEach((layerId) => {
 			mapRef.current.setFilter(layerId, configState.heatmap.filter)

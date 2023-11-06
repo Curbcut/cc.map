@@ -12,7 +12,7 @@ function HandleRadius({ map, configState, layerIds }) {
 			!configState.heatmap ||
 			!configState.heatmap.radius
 		) {
-			return
+			return null
 		}
 
 		layerIds.layerIds?.forEach((layerId) => {
