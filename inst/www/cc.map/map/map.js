@@ -1204,6 +1204,7 @@ function MapTile(_ref) {
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     if (!redraw_map) return;
     if (configState.choropleth.tileset.length === 0) return;
+    if (!(sourceLayers !== null && sourceLayers !== void 0 && sourceLayers.vector_layers)) return;
     var areSourceLayersLoaded = sourceLayers.vector_layers.every(function (sourceLayer) {
       // If the layer is not loaded, then mapRef.current.getLayer(sourceLayer.id) will return undefined
       var out_list = mapRef.current.getLayer(sourceLayer.id);

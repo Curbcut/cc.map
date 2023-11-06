@@ -250,6 +250,7 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 	useEffect(() => {
 		if (!redraw_map) return
 		if (configState.choropleth.tileset.length === 0) return
+		if (!sourceLayers?.vector_layers) return
 
 		const areSourceLayersLoaded = sourceLayers.vector_layers.every(
 			(sourceLayer) => {
