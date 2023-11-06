@@ -7,13 +7,9 @@ function HandleRadius({ map, configState, layerIds }) {
 	}, [map])
 
 	useEffect(() => {
-		if (
-			!mapRef.current ||
-			!configState.heatmap ||
-			!configState.heatmap.radius
-		) {
-			return null
-		}
+		if (!mapRef.current) return
+		if (!configState.heatmap) return
+		if (!configState.heatmap.filter) return
 
 		layerIds.layerIds?.forEach((layerId) => {
 			mapRef.current.setPaintProperty(
