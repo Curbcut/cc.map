@@ -158,7 +158,7 @@ function PointTile({ map, configState, username, token }) {
 				layerIdsRef.current = layerIds
 
 				// If the layer is not pickable, then we don't want to add the hover effect
-				if (!pickable) return null
+				if (!pickable) return
 
 				// On the layer, set the feature state to `hover: true` when the mouse
 				// is over it.
