@@ -1106,7 +1106,7 @@ function MapTile(_ref) {
             // Change this value to adjust the thickness
             configState.choropleth.outline_width ? configState.choropleth.outline_width : 1]
           }
-        });
+        }, buildingLayerId);
 
         // If the layer is not pickable, then we don't want to add the hover effect
         if (!pickable) return;

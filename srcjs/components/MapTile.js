@@ -125,35 +125,38 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 				)
 
 				// Add the outline
-				mapRef.current.addLayer({
-					id: layerId + '-outline',
-					type: 'line',
-					source: layerId,
-					'source-layer': layerId,
-					minzoom: sourceLayer.minzoom,
-					maxzoom: sourceLayer.maxzoom,
-					layout: {},
-					paint: {
-						'line-color': [
-							'case',
-							['boolean', ['feature-state', 'click'], false],
-							'#000000',
-							layerId.includes('building')
-								? 'lightgrey'
-								: configState.choropleth.outline_color
-								? configState.choropleth.outline_color
-								: 'transparent',
-						],
-						'line-width': [
-							'case',
-							['boolean', ['feature-state', 'click'], false],
-							3, // Change this value to adjust the thickness
-							configState.choropleth.outline_width
-								? configState.choropleth.outline_width
-								: 1,
-						],
+				mapRef.current.addLayer(
+					{
+						id: layerId + '-outline',
+						type: 'line',
+						source: layerId,
+						'source-layer': layerId,
+						minzoom: sourceLayer.minzoom,
+						maxzoom: sourceLayer.maxzoom,
+						layout: {},
+						paint: {
+							'line-color': [
+								'case',
+								['boolean', ['feature-state', 'click'], false],
+								'#000000',
+								layerId.includes('building')
+									? 'lightgrey'
+									: configState.choropleth.outline_color
+									? configState.choropleth.outline_color
+									: 'transparent',
+							],
+							'line-width': [
+								'case',
+								['boolean', ['feature-state', 'click'], false],
+								3, // Change this value to adjust the thickness
+								configState.choropleth.outline_width
+									? configState.choropleth.outline_width
+									: 1,
+							],
+						},
 					},
-				})
+					buildingLayerId
+				)
 
 				// If the layer is not pickable, then we don't want to add the hover effect
 				if (!pickable) return
