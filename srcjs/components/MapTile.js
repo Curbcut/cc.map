@@ -124,7 +124,7 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 					buildingLayerId
 				)
 
-				// Add the outline
+				// Add the default outline layer
 				mapRef.current.addLayer(
 					{
 						id: layerId + '-outline',
@@ -135,28 +135,39 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 						maxzoom: sourceLayer.maxzoom,
 						layout: {},
 						paint: {
-							'line-color': [
-								'case',
-								['boolean', ['feature-state', 'click'], false],
-								'#000000',
-								layerId.includes('building')
-									? 'lightgrey'
-									: configState.choropleth.outline_color
-									? configState.choropleth.outline_color
-									: 'transparent',
-							],
-							'line-width': [
-								'case',
-								['boolean', ['feature-state', 'click'], false],
-								3, // Change this value to adjust the thickness
-								configState.choropleth.outline_width
-									? configState.choropleth.outline_width
-									: 1,
-							],
+							'line-color': layerId.includes('building')
+								? 'lightgrey'
+								: configState.choropleth.outline_color
+								? configState.choropleth.outline_color
+								: 'transparent',
+							'line-width': configState.choropleth.outline_width
+								? configState.choropleth.outline_width
+								: 1,
 						},
 					},
 					buildingLayerId
 				)
+
+				// Add the outline-selection layer for the clicked feature
+				mapRef.current.addLayer({
+					id: layerId + '-outline-selection',
+					type: 'line',
+					source: layerId,
+					'source-layer': layerId,
+					minzoom: sourceLayer.minzoom,
+					maxzoom: sourceLayer.maxzoom,
+					layout: {},
+					paint: {
+						'line-color': '#000000', // Color for the clicked feature
+						'line-width': 3, // Thickness for the clicked feature
+						'line-opacity': [
+							'case',
+							['boolean', ['feature-state', 'click'], false],
+							1, // Visible when clicked
+							0, // Invisible otherwise
+						],
+					},
+				})
 
 				// If the layer is not pickable, then we don't want to add the hover effect
 				if (!pickable) return
@@ -222,6 +233,7 @@ function MapTile({ map, configState, click, username, token, setClick }) {
 					mapRef.current.off('mousemove', layerId)
 					mapRef.current.off('mouseleave', layerId)
 					mapRef.current.removeLayer(layerId + '-outline')
+					mapRef.current.removeLayer(layerId + '-outline-selection')
 					mapRef.current.removeLayer(layerId)
 					mapRef.current.removeSource(layerId)
 				}
