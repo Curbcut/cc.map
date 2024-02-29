@@ -13,7 +13,7 @@ function BuildingStyle({ sourceLayers, map }) {
 		if (!mapRef.current) return
 
 		const handleMove = () => {
-			const zoom = Math.round(mapRef.current.getZoom())
+			const zoom = mapRef.current.getZoom()
 			setZoom(zoom)
 		}
 
@@ -38,12 +38,17 @@ function BuildingStyle({ sourceLayers, map }) {
 		if (!buildingLayer) return
 
 		const buildingLayerId = buildingLayer.id
+
+		console.log(zoom)
+
 		const visibleBuildingSourceLayer = sourceLayers.vector_layers.find(
 			(layer) =>
 				layer.id.includes('building') &&
 				zoom >= layer.minzoom &&
 				zoom <= layer.maxzoom
 		)
+
+		console.log(visibleBuildingSourceLayer)
 
 		if (visibleBuildingSourceLayer) {
 			mapRef.current.setLayoutProperty(

@@ -1316,7 +1316,7 @@ function BuildingStyle(_ref) {
   Object(react__WEBPACK_IMPORTED_MODULE_0__["useEffect"])(function () {
     if (!mapRef.current) return;
     var handleMove = function handleMove() {
-      var zoom = Math.round(mapRef.current.getZoom());
+      var zoom = mapRef.current.getZoom();
       setZoom(zoom);
     };
     mapRef.current.on('moveend', handleMove);
@@ -1337,9 +1337,11 @@ function BuildingStyle(_ref) {
     });
     if (!buildingLayer) return;
     var buildingLayerId = buildingLayer.id;
+    console.log(zoom);
     var visibleBuildingSourceLayer = sourceLayers.vector_layers.find(function (layer) {
       return layer.id.includes('building') && zoom >= layer.minzoom && zoom <= layer.maxzoom;
     });
+    console.log(visibleBuildingSourceLayer);
     if (visibleBuildingSourceLayer) {
       mapRef.current.setLayoutProperty(buildingLayerId, 'visibility', 'none');
     } else {
