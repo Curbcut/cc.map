@@ -39,7 +39,7 @@ map_js_server <- function(id) {
         longitude = -73.5,
         latitude = 45.5,
         zoom = 9,
-        tileset_prefix = "mtl",
+        inst_prefix  = "mtl",
         stories = stories,
         stories_min_zoom = 13)
     })

@@ -9,7 +9,7 @@
 #' @param longitude <`numeric`> The longitude value for the initial map center.
 #' @param latitude <`numeric`> The latitude value for the initial map center.
 #' @param zoom <`numeric`> The zoom level for the initial map display.
-#' @param tileset_prefix <`numeric`> The prefix for the tileset to be used with the map.
+#' @param inst_prefix  <`numeric`> The prefix for the tileset to be used with the map.
 #' This will be used only for the stories tileset.
 #' @param map_style_id <`character`> Full map identifier link, e.g.
 #' `"mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp"`.
@@ -30,7 +30,7 @@
 #' @importFrom htmltools htmlDependency tags div
 #'
 #' @export
-map_input <- function(map_ID, username, token, longitude, latitude, zoom, tileset_prefix,
+map_input <- function(map_ID, username, token, longitude, latitude, zoom, inst_prefix,
                       map_style_id, stories = NULL, stories_min_zoom = 1, lang = "en", div_height = "100vh",
                       div_width = "100%") {
 

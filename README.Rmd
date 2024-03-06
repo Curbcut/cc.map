@@ -59,7 +59,7 @@ ui <- fluidPage(
   actionButton("button2", "just change color"),
   actionButton("button3", "add a selection"),
   actionButton("button4", "change viewstate"),
-  map_input("map", lon = -73.5, lat = 45.5, zoom = 9, tileset_prefix = "mtl")
+  map_input("map", lon = -73.5, lat = 45.5, zoom = 9, inst_prefix  = "mtl")
 )
 
 server <- function(input, output, session) {

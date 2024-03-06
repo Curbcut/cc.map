@@ -11,7 +11,7 @@ map_input(
   longitude,
   latitude,
   zoom,
-  tileset_prefix,
+  inst_prefix,
   map_style_id,
   stories = NULL,
   stories_min_zoom = 1,
@@ -33,7 +33,7 @@ map_input(
 
 \item{zoom}{<\code{numeric}> The zoom level for the initial map display.}
 
-\item{tileset_prefix}{<\code{numeric}> The prefix for the tileset to be used with the map.
+\item{inst_prefix}{<\code{numeric}> The prefix for the tileset to be used with the map.
 This will be used only for the stories tileset.}
 
 \item{map_style_id}{<\code{character}> Full map identifier link, e.g.
