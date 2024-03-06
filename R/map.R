@@ -56,7 +56,7 @@ map_input <- function(map_ID, username, token, longitude, latitude, zoom, inst_p
   # If NULL, no stories added.
   if (!is.null(stories)) {
     configurations$stories <- list()
-    configurations$stories$stories <- sprintf("%s_stories", tileset_prefix)
+    configurations$stories$stories <- sprintf("%s_stories", inst_prefix)
     configurations$stories$stories_img <- sapply(stories$img_base64, list) |> jsonlite::toJSON()
     configurations$stories$min_zoom <- stories_min_zoom
   }
