@@ -13,6 +13,10 @@ function NavData({ map, setValue }) {
 		if (!mapRef.current) return // wait for map to initialize
 
 		const handleMove = () => {
+			const bounds = mapRef.current.getBounds()
+			const sw = bounds.getSouthWest()
+			const ne = bounds.getNorthEast()
+
 			const lon = mapRef.current.getCenter().lng.toFixed(4)
 			const lat = mapRef.current.getCenter().lat.toFixed(4)
 			const zoom = mapRef.current.getZoom().toFixed(2)
@@ -22,6 +26,16 @@ function NavData({ map, setValue }) {
 				latitude: lat,
 				zoom: zoom,
 				event: 'viewstate',
+				boundingbox: {
+					southWest: {
+						lat: sw.lat.toFixed(4),
+						lon: sw.lng.toFixed(4),
+					},
+					northEast: {
+						lat: ne.lat.toFixed(4),
+						lon: ne.lng.toFixed(4),
+					},
+				},
 			})
 		}
 
@@ -31,6 +45,8 @@ function NavData({ map, setValue }) {
 			mapRef.current.off('moveend', handleMove)
 		}
 	}, [stableSetValue]) // use stableSetValue as a dependency
+
+	return null
 }
 
 export default NavData

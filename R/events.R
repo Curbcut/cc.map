@@ -49,14 +49,19 @@ get_map_event <- function(map_id, event_type, values, session = shiny::getDefaul
 get_map_viewstate <- function(map_id, session = shiny::getDefaultReactiveDomain()) {
   out <- get_map_event(
     map_id = map_id, event_type = "viewstate",
-    values = c("longitude", "latitude", "zoom"), session = session
+    values = c("longitude", "latitude", "zoom", "boundingbox"), session = session
   )
 
   if (length(out) == 0) {
     return(NULL)
   }
 
-  lapply(out, as.numeric)
+  out[c("longitude", "latitude", "zoom")] <-
+    lapply(out[c("longitude", "latitude", "zoom")], as.numeric)
+  out$boundingbox$southWest <- lapply(out$boundingbox$southWest, as.numeric)
+  out$boundingbox$northEast <- lapply(out$boundingbox$northEast, as.numeric)
+
+  return(out)
 }
 
 #' Retrieve Click Information from a Map

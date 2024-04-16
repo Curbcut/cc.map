@@ -1548,6 +1548,9 @@ function NavData(_ref) {
     if (!mapRef.current) return; // wait for map to initialize
 
     var handleMove = function handleMove() {
+      var bounds = mapRef.current.getBounds();
+      var sw = bounds.getSouthWest();
+      var ne = bounds.getNorthEast();
       var lon = mapRef.current.getCenter().lng.toFixed(4);
       var lat = mapRef.current.getCenter().lat.toFixed(4);
       var zoom = mapRef.current.getZoom().toFixed(2);
@@ -1555,7 +1558,17 @@ function NavData(_ref) {
         longitude: lon,
         latitude: lat,
         zoom: zoom,
-        event: 'viewstate'
+        event: 'viewstate',
+        boundingbox: {
+          southWest: {
+            lat: sw.lat.toFixed(4),
+            lon: sw.lng.toFixed(4)
+          },
+          northEast: {
+            lat: ne.lat.toFixed(4),
+            lon: ne.lng.toFixed(4)
+          }
+        }
       });
     };
     mapRef.current.on('moveend', handleMove);
@@ -1563,8 +1576,9 @@ function NavData(_ref) {
       mapRef.current.off('moveend', handleMove);
     };
   }, [stableSetValue]); // use stableSetValue as a dependency
-}
 
+  return null;
+}
 /* harmony default export */ __webpack_exports__["default"] = (NavData);
 
 /***/ }),
