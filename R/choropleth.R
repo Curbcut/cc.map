@@ -208,18 +208,25 @@ map_choropleth_redraw <- function(session, map_ID) {
 map_choropleth_fill_fun <- function(df, get_col = names(df)[1],
                                     fallback = "transparent") {
 
-  # Convert each row to character
-  row_as_chr <- as.character(apply(df, 1, as.character))
+  # # Convert each row to character
+  # row_as_chr <- as.character(apply(df, 1, as.character))
+  #
+  # # Add the fallback color
+  # row_as_chr <- c(row_as_chr, fallback)
+  #
+  # # Create a Mapbox fill-color object using "match" and "get"
+  # mapbox_fill_clr <- c("match", "x", lapply(row_as_chr, c))
+  # mapbox_fill_clr[[2]] <- list("get", get_col)
+  #
+  # # Convert the fill-color object to JSON
+  # return(jsonlite::toJSON(mapbox_fill_clr, auto_unbox = T))
 
-  # Add the fallback color
-  row_as_chr <- c(row_as_chr, fallback)
-
-  # Create a Mapbox fill-color object using "match" and "get"
-  mapbox_fill_clr <- c("match", "x", lapply(row_as_chr, c))
-  mapbox_fill_clr[[2]] <- list("get", get_col)
-
-  # Convert the fill-color object to JSON
-  return(jsonlite::toJSON(mapbox_fill_clr, auto_unbox = T))
-
+  ## FASTER
+  row_as_chr <- as.vector(t(df))
+  row_as_chr_pasted <- stringi::stri_paste(stringi::stri_paste('"', row_as_chr, '"', sep=""),
+                                           collapse=",")
+  out <- sprintf('["match",["get","%s"],%s,"%s"]', get_col, row_as_chr_pasted,
+                 fallback)
+  return(out)
 }
 
