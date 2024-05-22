@@ -117,7 +117,7 @@ function PointTile({ map, configState, username, token }) {
 						type: 'circle',
 						source: layerId,
 						'source-layer': sourceLayer.id,
-						minzoom: 13,
+						minzoom: configState.heatmap.minzoom,
 						maxzoom: sourceLayer.maxzoom,
 						paint: {
 							// Increase the radius of the circle as the zoom level and dbh value increases
@@ -138,7 +138,8 @@ function PointTile({ map, configState, username, token }) {
 								configState.heatmap.colours[4],
 								rgba,
 							],
-							'circle-stroke-color': 'white',
+							'circle-stroke-color':
+								configState.heatmap.strokeColor,
 							'circle-stroke-width': 1,
 							'circle-opacity': [
 								'interpolate',

@@ -11,7 +11,9 @@ map_heatmap(
   radius = list("interpolate", list("linear"), list("zoom"), 0, 1, 10, 3, 12, 10, 15, 30),
   filter = list("all"),
   pickable = FALSE,
-  colours
+  colours,
+  stroke_color = "white",
+  min_zoom = 13
 )
 }
 \arguments{
@@ -44,6 +46,10 @@ layer can be pickable? Defaults to FALSE.}
 
 \item{colours}{<\verb{character vector}> Vector of length 5, with rgb or rgba
 values.}
+
+\item{stroke_color}{<\code{character}> Color of the stroke around every point.}
+
+\item{min_zoom}{<\code{numeric}> When do the points start to appear?}
 }
 \value{
 No return value. The function sends an update message to the Shiny

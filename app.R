@@ -141,3 +141,54 @@ server <- function(input, output, session) {
 
 shinyApp(ui, server)
 
+
+
+
+# UI / server -------------------------------------------------------------
+
+map_js_UI <- function(id) {
+  shiny::tagList(
+    shiny::uiOutput(outputId = shiny::NS(id, "map_ph"))
+  )
+}
+
+map_js_server <- function(id) {
+
+  shiny::moduleServer(id, function(input, output, session) {
+
+    output$map_ph <- shiny::renderUI({
+      cc.map::map_input(
+        shiny::NS(id, "map"),
+        username = "curbcut",
+        token = 'pk.eyJ1IjoiY3VyYmN1dCIsImEiOiJjbGprYnVwOTQwaDAzM2xwaWdjbTB6bzdlIn0.Ks1cOI6v2i8jiIjk38s_kg',
+        map_style_id = "mapbox://styles/curbcut/cljkciic3002h01qveq5z1wrp",
+        longitude = -73.5,
+        latitude = 45.5,
+        zoom = 9,
+        inst_prefix  = "mtl",
+        stories_min_zoom = 13)
+    })
+    map_heatmap(session = session, map_ID = "map",
+                tileset = "mtl_syntheco",
+                colours = c("rgba(179, 179, 187, 0)", "rgb(196, 205, 225)", "rgb(152, 168, 203)",
+                            "rgb(108, 131, 181)", "rgb(76, 92, 127)"),
+                stroke_color = "transparent", min_zoom = 16)
+
+  })
+}
+
+
+ui <- fluidPage(
+  theme = bslib::bs_theme(version = "4"),
+  titlePanel("reactR mapbox-gl"),
+  map_js_UI(id = "test_module")
+)
+
+server <- function(input, output, session) {
+
+  map_js_server(id = "test_module")
+
+}
+
+shinyApp(ui, server)
+

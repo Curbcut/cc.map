@@ -27,6 +27,8 @@
 #' layer can be pickable? Defaults to FALSE.
 #' @param colours <`character vector`> Vector of length 5, with rgb or rgba
 #' values.
+#' @param stroke_color <`character`> Color of the stroke around every point.
+#' @param min_zoom <`numeric`> When do the points start to appear?
 #'
 #' @return No return value. The function sends an update message to the Shiny
 #' server to update the map.
@@ -36,7 +38,7 @@ map_heatmap <- function(session, map_ID, tileset,
                         radius = list("interpolate", list("linear"),
                                       list("zoom"), 0, 1, 10, 3, 12, 10, 15, 30),
                         filter = list("all"), pickable = FALSE,
-                        colours) {
+                        colours, stroke_color = "white", min_zoom = 13) {
 
   # Create an empty configuration list
   configuration <- list()
@@ -48,6 +50,8 @@ map_heatmap <- function(session, map_ID, tileset,
   configuration$heatmap$filter <- jsonlite::toJSON(filter, auto_unbox = T)
   configuration$heatmap$pickable <- pickable
   configuration$heatmap$colours <- colours
+  configuration$heatmap$strokeColor <- stroke_color
+  configuration$heatmap$minzoom <- min_zoom
 
   # Send the configuration list to the server
   update_map(session = session, map_ID = map_ID, configuration = configuration)
